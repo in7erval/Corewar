@@ -8,5 +8,8 @@
 # include "libft.h"
 # include "ft_printf.h"
 # include "op.h"
+# include <stdint.h>
+# include <stdbool.h>
+
 
 #endif //COREWAR_COREWAR_H
