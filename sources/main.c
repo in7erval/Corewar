@@ -6,7 +6,7 @@
 /*   By: majosue <majosue@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/09/08 20:32:21 by majosue           #+#    #+#             */
-/*   Updated: 2020/09/08 21:33:44 by majosue          ###   ########.fr       */
+/*   Updated: 2020/09/09 15:07:18 by majosue          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,7 @@ unsigned int reverse_bytes(unsigned int value)
 int main(int argc, char **argv) 
 {
 	int			fd;
-	header_t	header;
+	t_header	header;
 	void		*code;
 
 	if (argc < 2)
