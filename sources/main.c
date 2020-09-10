@@ -6,7 +6,7 @@
 /*   By: majosue <majosue@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/09/08 20:32:21 by majosue           #+#    #+#             */
-/*   Updated: 2020/09/09 21:49:34 by majosue          ###   ########.fr       */
+/*   Updated: 2020/09/10 16:11:57 by majosue          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,6 +39,7 @@ void ft_init_arena(t_arena *arena)
 	arena->carriages_nbr = 0;
 	arena->carriages = NULL;
 	arena->dump_nbr_cycles = NULL;
+	ft_bzero(arena->core, MEM_SIZE);
 }
 
 void ft_check_next_args(int current, int number, char **argv, int delta)
@@ -189,6 +190,49 @@ void ft_read_args(t_arena *arena, int argc, char **argv)
 	}
 }
 
+void ft_print_memory(void *mem, size_t size)
+{
+	size_t i;
+	size_t ofset;
+
+	i = 0;
+	ofset = 0;
+	while (i < size)
+	{
+		if (i / DUMP_WIDTH && !(i % DUMP_WIDTH))
+			ft_printf("\n");
+		if (!(i % DUMP_WIDTH))
+		{
+			ft_printf("0x%.4x:", ofset);
+			ofset += DUMP_WIDTH;
+		}
+		//if (!(i % 2))
+			ft_printf(" ");
+		ft_printf("%.2x", ((unsigned char*)(mem))[i]);
+		i++;
+	}
+		ft_printf("\n");
+}
+
+void ft_put_players_to_arena(t_arena *arena)
+{
+	int delta;
+	unsigned char *ptr;
+	t_list *carriages;
+
+	ptr = arena->core;
+	carriages = arena->carriages;
+	delta = MEM_SIZE / arena->carriages_nbr;
+	while(carriages)
+	{
+		((t_carriage*)carriages->content)->pos = ptr; 
+		ft_memmove(ptr, ((t_carriage*)carriages->content)->player_code, ft_reverse_bytes(((t_carriage*)carriages->content)->header.prog_size));
+		ptr += delta;
+		carriages = carriages->next;
+	}
+}
+
+
 int main(int argc, char **argv)
 {
 	t_arena arena;
@@ -198,12 +242,14 @@ int main(int argc, char **argv)
 		ft_exit("usage: ./corewar [-dump nbr_cycles] [[-n number] champion1.cor] ...", "");
 	ft_init_arena(&arena);
 	ft_read_args(&arena, argc, argv);
-	
+	ft_put_players_to_arena(&arena);
+	ft_start_game(&arena);
 	c = arena.carriages;
-	while (c)
+	/*while (c)
 	{
 		ft_printf("carrage.player_nbr = %d\n", ((t_carriage *)(c->content))->player_nbr);
 		c = c->next;
-	}
+	} */
+	ft_print_memory(arena.core, MEM_SIZE);
 	return (0);
 }
