@@ -1,155 +1,255 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   main.c                                             :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: majosue <majosue@student.42.fr>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2020/09/08 20:32:21 by majosue           #+#    #+#             */
+/*   Updated: 2020/09/10 16:11:57 by majosue          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "corewar.h"
 
-void kill(char *str) {
-	ft_putstr_fd(str, 2);
-	exit(0);
+/*
+**	Exit wraper 
+*/
+
+void ft_exit(char *str, char *str2)
+{
+	if (str2)
+	{
+		ft_putstr_fd(str, 2);
+		ft_putendl_fd(str2, 2);
+		exit(EXIT_FAILURE);
+	}
+	perror(str);
+	exit(EXIT_FAILURE);
 }
 
-char *byte_to_chars(uint8_t byte) {
-	char *str;
-	char *radix = "0123456789abcdef";
-
-	str = ft_strnew(2);
-	str[1] = radix[byte % 16];
-	str[0] = radix[(byte / 16) % 16];
-	return (str);
+unsigned int ft_reverse_bytes(unsigned int value)
+{
+	return (value & 0x000000FFU) << 24 | (value & 0x0000FF00U) << 8 |
+		   (value & 0x00FF0000U) >> 8 | (value & 0xFF000000U) >> 24;
 }
 
-void	print_byte(uint8_t byte) {
-	char *str;
-
-	str = byte_to_chars(byte);
-	ft_putstr(str);
-	free(str);
+void ft_init_arena(t_arena *arena)
+{
+	arena->carriages_nbr = 0;
+	arena->carriages = NULL;
+	arena->dump_nbr_cycles = NULL;
+	ft_bzero(arena->core, MEM_SIZE);
 }
 
-void 	print_nbytes(uint8_t bytes[], size_t size) {
-	size_t i;
+void ft_check_next_args(int current, int number, char **argv, int delta)
+{
+	if (current + delta >= number)
+		ft_exit("ERROR: not enough args after ", argv[current]);
+}
 
-	i = 0;
-	while (i < size) {
-		if (i % 16 == 0 && i != 0)
-			ft_putchar('\n');
-		print_byte(bytes[i]);
-		if (i % 2 == 1)
-			ft_putchar(' ');
-		i++;
+void ft_set_dump(char *str, t_arena *arena)
+{
+	if (!arena->dump_nbr_cycles)
+	{
+		if (!(arena->dump_nbr_cycles = ft_memalloc(sizeof(*(arena->dump_nbr_cycles)))))
+			ft_exit("ERROR", NULL);
+		*(arena->dump_nbr_cycles) = ft_atoi(str);
+		if (*(arena->dump_nbr_cycles) < 0)
+			ft_exit("ERROR: nbr_cycles wrong ", "");
 	}
 }
 
-int32_t bytes_to_int32(const uint8_t *bytes, size_t size) {
-	int32_t num;
-	bool	minus;
-	size_t 	i;
+int ft_find_next_avialable_number(t_list *carriages, int delta)
+{
+	int nbr;
+	int is_unic;
+	t_list *head;
 
-	num = 0;
-	i = 0;
-	minus = bytes[0] & 0x80; //1000 0000
-	while (size > 0) {
-		num += bytes[size - 1] << i * 8;
-		i++;
-		size--;
+	is_unic = 1;
+	head = carriages;
+	nbr = ((t_carriage *)(carriages->content))->player_nbr + delta;
+	while (carriages)
+	{
+		if (((t_carriage *)(carriages->content))->player_nbr == nbr)
+			is_unic = 0;
+		carriages = carriages->next;
 	}
-	if (minus)
-		num = ~num;
-	return (num);
-
+	if (!is_unic)
+		return (ft_find_next_avialable_number(head, delta + 1));
+	return (nbr);
 }
 
-char *bytes_to_string(const uint8_t bytes[], size_t size) {
-	char *str;
-	size_t i;
+int ft_read_player_number(char **str, t_arena *arena)
+{
+	long number;
+	t_list *carriages;
 
-	i = 0;
-	str = ft_strnew(size);
-	while (i < size) {
-		str[i] = (char)bytes[i];
-		i++;
+	number = 1;
+	carriages = arena->carriages;
+	if (!str && !carriages)
+		return (number);
+	else if (!str && carriages)
+		number = ft_find_next_avialable_number(arena->carriages, 1);
+	else
+	{
+		number = ft_atoi(*str);
+		while (carriages)
+		{
+			if (((t_carriage *)(carriages->content))->player_nbr == number)
+				ft_exit("ERROR: already used player number - ", *str);
+			carriages = carriages->next;
+		}
 	}
-	return (str);
+	if (number <= 0 || number > INT32_MAX)
+		ft_exit("ERROR: wrong player number", "");
+	return (number);
 }
 
-bool	check_null_bytes(const uint8_t bytes[]) {
-	return bytes[0] == 0x00 && bytes[1] == 0x00 && bytes[2] == 0x00 && bytes[3] == 0x00;
+t_header ft_read_header(char *file, int *fd)
+{
+	t_header header;
+
+	if ((*fd = open(file, O_RDONLY)) < 0)
+		ft_exit("ERROR", NULL);
+	if (read(*fd, &header, sizeof(header)) != sizeof(header))
+		ft_exit("ERROR: reading header in file ", file);
+	if (ft_reverse_bytes(header.magic) != COREWAR_EXEC_MAGIC)
+		ft_exit("ERROR: magic in header in file ", file);
+	if (header.prog_name[PROG_NAME_LENGTH] != 0)
+		ft_exit("ERROR: no string terminator found in champion name in ", file);
+	if (header.comment[COMMENT_LENGTH] != 0)
+		ft_exit("ERROR: no string terminator found in comments in ", file);
+	if (ft_reverse_bytes(header.prog_size) > CHAMP_MAX_SIZE)
+		ft_exit("ERROR: champion prog_size too big in ", file);
+	return (header);
 }
 
-int main(void) {
+void *ft_read_code(int *fd, int size, char *file)
+{
+	void *code;
+	off_t old_position;
+	off_t end_position;
+
+	if (!(code = ft_memalloc(size)))
+		ft_exit("ERROR", NULL);
+	if (read(*fd, code, size) != size)
+		ft_exit("ERROR reading champion programm in ", file);
+	old_position = lseek(*fd, 0, SEEK_CUR);
+	end_position = lseek(*fd, 0, SEEK_END);
+	if (old_position != end_position)
+	{
+		close(*fd);
+		ft_exit("ERROR: some data found after champion programm in ", file);
+	}
+	close(*fd);
+	return (code);
+}
+
+void ft_read_champion(char **str, char **file, t_arena *arena)
+{
 	int fd;
-	int rd;
-	uint8_t header[4];
+	t_carriage *carrage;
+	t_list *new_carrage;
 
-	fd = open("Batman.cor", O_RDONLY);
+	if (!(carrage = (t_carriage *)ft_memalloc(sizeof(*carrage))))
+		ft_exit("ERROR", NULL);
+	carrage->player_nbr = ft_read_player_number(str, arena);
+	carrage->header = ft_read_header(*file, &fd);
+	carrage->player_code = ft_read_code(&fd, ft_reverse_bytes(carrage->header.prog_size), *file);
+	ft_bzero(&carrage->regs, REG_SIZE * REG_NUMBER);
+	carrage->carry = 1;
+	carrage->regs[0] = -carrage->player_nbr;
+	if (!(new_carrage = ft_lstnew(carrage, sizeof(*carrage))))
+		ft_exit("ERROR", NULL);
+	ft_lstadd(&(arena->carriages), new_carrage);
+	if (++arena->carriages_nbr > MAX_PLAYERS)
+		ft_exit("ERROR: exeded players maximum", "");
+}
 
-	/* read magic header */
-	rd = read(fd, &header, 4);
-	if (rd < 4)
-		kill("error");
-	//print_nbytes(header, 4);
-	int32_t num = bytes_to_int32(header, 4);
-	//ft_printf("\n%d\n", num);
-	if (num == COREWAR_EXEC_MAGIC)
-		ft_printf("\t{bold}magic head exists{eoc}\n");
+void ft_read_args(t_arena *arena, int argc, char **argv)
+{
+	int i;
 
-	/* read name */
-	uint8_t name[128];
-	rd = read(fd, &name, 128);
-	if (rd < 128)
-		kill("error");
-	//print_nbytes(name, 128);
-	char *name_str = bytes_to_string(name, 128);
-	ft_printf("\nname: %s\n", name_str);
-	free(name_str);
+	i = 0;
+	while (++i < argc)
+	{
+		if (ft_strequ(argv[i], "-n"))
+		{
+			ft_check_next_args(i, argc, argv, 2);
+			ft_read_champion(&(argv[i + 1]), &(argv[i + 2]), arena);
+			i += 2;
+		}
+		else if (ft_strequ(argv[i], "-dump"))
+		{
+			ft_check_next_args(i, argc, argv, 1);
+			ft_set_dump(argv[++i], arena);
+		}
+		else
+			ft_read_champion(NULL, &(argv[i]), arena);
+	}
+}
 
-	/* read null bytes */
-	uint8_t null_bytes[4];
-	rd = read(fd, &null_bytes, 4);
-	if (rd < 4)
-		kill("error");
-	if (check_null_bytes(null_bytes))
-		ft_printf("\t{light}null bytes exists{eoc}\n");
+void ft_print_memory(void *mem, size_t size)
+{
+	size_t i;
+	size_t ofset;
 
-	/* read code_size */
-	uint8_t exec_code_size_bytes[4];
-	rd = read(fd, &exec_code_size_bytes, 4);
-	if (rd < 4)
-		kill("error");
-	int32_t exec_code_size = bytes_to_int32(exec_code_size_bytes, 4);
-	ft_printf("code_size: %d\n",  exec_code_size);
-	if (exec_code_size < CHAMP_MAX_SIZE)
-		ft_printf("\t{light}code_size < CHAMP_MAX_SIZE (682){eoc}\n");
+	i = 0;
+	ofset = 0;
+	while (i < size)
+	{
+		if (i / DUMP_WIDTH && !(i % DUMP_WIDTH))
+			ft_printf("\n");
+		if (!(i % DUMP_WIDTH))
+		{
+			ft_printf("0x%.4x:", ofset);
+			ofset += DUMP_WIDTH;
+		}
+		//if (!(i % 2))
+			ft_printf(" ");
+		ft_printf("%.2x", ((unsigned char*)(mem))[i]);
+		i++;
+	}
+		ft_printf("\n");
+}
 
-	/* read comment */
-	uint8_t comment[2048];
-	rd = read(fd, &comment, 2048);
-	if (rd < 2048)
-		kill("error");
-	//print_nbytes(comment, 2048);
-	char *comment_str = bytes_to_string(comment, 2048);
-	ft_printf("comment: %s\n", comment_str);
-	free(comment_str);
+void ft_put_players_to_arena(t_arena *arena)
+{
+	int delta;
+	unsigned char *ptr;
+	t_list *carriages;
 
-	/* read null bytes */
-	rd = read(fd, &null_bytes, 4);
-	if (rd < 4)
-		kill("error");
-	if (check_null_bytes(null_bytes))
-		ft_printf("\t{light}null bytes exists{eoc}\n");
+	ptr = arena->core;
+	carriages = arena->carriages;
+	delta = MEM_SIZE / arena->carriages_nbr;
+	while(carriages)
+	{
+		((t_carriage*)carriages->content)->pos = ptr; 
+		ft_memmove(ptr, ((t_carriage*)carriages->content)->player_code, ft_reverse_bytes(((t_carriage*)carriages->content)->header.prog_size));
+		ptr += delta;
+		carriages = carriages->next;
+	}
+}
 
-	/* read exec code */
-	uint8_t exec_code_bytes[exec_code_size];
-	rd = read(fd, &exec_code_bytes, exec_code_size);
-	if (rd < exec_code_size)
-		kill("error");
-	ft_printf("exec code:\n");
-	print_nbytes(exec_code_bytes, exec_code_size);
-	ft_printf("\n");
-	close(fd);
 
-	/* print file bytes */
-	ft_printf("\nFile bytes:\n");
-	fd = open("Batman.cor", O_RDONLY);
-	uint8_t buffer[4 + 128 + 4 + 4 + 2048 + 682];
-	rd = read(fd, &buffer, 4 + 128 + 4 + 4 + 2048 + 682);
-	print_nbytes(buffer, rd);
+int main(int argc, char **argv)
+{
+	t_arena arena;
+	t_list *c;
+
+	if (argc < 2)
+		ft_exit("usage: ./corewar [-dump nbr_cycles] [[-n number] champion1.cor] ...", "");
+	ft_init_arena(&arena);
+	ft_read_args(&arena, argc, argv);
+	ft_put_players_to_arena(&arena);
+	ft_start_game(&arena);
+	c = arena.carriages;
+	/*while (c)
+	{
+		ft_printf("carrage.player_nbr = %d\n", ((t_carriage *)(c->content))->player_nbr);
+		c = c->next;
+	} */
+	ft_print_memory(arena.core, MEM_SIZE);
 	return (0);
 }
