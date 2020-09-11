@@ -14,7 +14,7 @@
 typedef struct s_carriage
 {
     int         pc;
-    unsigned char *pos;
+//    unsigned char *pos; // No need it. Use pc to store adress of dedicated memory. core[pc]
     int         regs[REG_NUMBER];
     int         carry;
     int         player_nbr;

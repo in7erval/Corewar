@@ -6,7 +6,7 @@
 /*   By: majosue <majosue@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/09/08 20:32:21 by majosue           #+#    #+#             */
-/*   Updated: 2020/09/10 16:11:57 by majosue          ###   ########.fr       */
+/*   Updated: 2020/09/11 20:16:18 by majosue          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -159,7 +159,7 @@ void ft_read_champion(char **str, char **file, t_arena *arena)
 	carrage->player_code = ft_read_code(&fd, ft_reverse_bytes(carrage->header.prog_size), *file);
 	ft_bzero(&carrage->regs, REG_SIZE * REG_NUMBER);
 	carrage->carry = 1;
-	carrage->regs[0] = -carrage->player_nbr;
+	carrage->regs[0] = -carrage->player_nbr; // по методичке Бражника так но почему? Зачем минус нужен?
 	if (!(new_carrage = ft_lstnew(carrage, sizeof(*carrage))))
 		ft_exit("ERROR", NULL);
 	ft_lstadd(&(arena->carriages), new_carrage);
@@ -217,17 +217,20 @@ void ft_print_memory(void *mem, size_t size)
 void ft_put_players_to_arena(t_arena *arena)
 {
 	int delta;
-	unsigned char *ptr;
+	//unsigned char *ptr;
 	t_list *carriages;
+	int pc;
 
-	ptr = arena->core;
+	//ptr = arena->core;
+	pc = 0;
 	carriages = arena->carriages;
 	delta = MEM_SIZE / arena->carriages_nbr;
 	while(carriages)
 	{
-		((t_carriage*)carriages->content)->pos = ptr; 
-		ft_memmove(ptr, ((t_carriage*)carriages->content)->player_code, ft_reverse_bytes(((t_carriage*)carriages->content)->header.prog_size));
-		ptr += delta;
+		//((t_carriage*)carriages->content)->pos = ptr;
+		((t_carriage*)carriages->content)->pc = pc; 
+		ft_memmove(arena->core + pc, ((t_carriage*)carriages->content)->player_code, ft_reverse_bytes(((t_carriage*)carriages->content)->header.prog_size));
+		pc += delta;
 		carriages = carriages->next;
 	}
 }
@@ -243,7 +246,7 @@ int main(int argc, char **argv)
 	ft_init_arena(&arena);
 	ft_read_args(&arena, argc, argv);
 	ft_put_players_to_arena(&arena);
-	ft_start_game(&arena);
+//	ft_start_game(&arena);
 	c = arena.carriages;
 	/*while (c)
 	{
