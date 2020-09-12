@@ -39,6 +39,8 @@ void ft_init_arena(t_arena *arena)
 	arena->carriages_nbr = 0;
 	arena->carriages = NULL;
 	arena->dump_nbr_cycles = NULL;
+	arena->players_nbr = 0;
+	arena->players = NULL;
 	ft_bzero(arena->core, MEM_SIZE);
 }
 
@@ -60,45 +62,48 @@ void ft_set_dump(char *str, t_arena *arena)
 	}
 }
 
-int ft_find_next_avialable_number(t_list *carriages, int delta)
+int ft_find_next_available_number(t_list *players, int delta)
 {
 	int nbr;
 	int is_unic;
 	t_list *head;
+	t_player *player;
 
 	is_unic = 1;
-	head = carriages;
-	nbr = ((t_carriage *)(carriages->content))->player_nbr + delta;
-	while (carriages)
+	head = players;
+	player = (t_player *)players->content;
+	nbr = player->player_nbr + delta;
+	while (players)
 	{
-		if (((t_carriage *)(carriages->content))->player_nbr == nbr)
+		player = (t_player *)players->content;
+		if (player->player_nbr == nbr)
 			is_unic = 0;
-		carriages = carriages->next;
+		players = players->next;
 	}
 	if (!is_unic)
-		return (ft_find_next_avialable_number(head, delta + 1));
+		return (ft_find_next_available_number(head, delta + 1));
 	return (nbr);
 }
 
 int ft_read_player_number(char **str, t_arena *arena)
 {
 	long number;
-	t_list *carriages;
+	t_list *players;
 
 	number = 1;
-	carriages = arena->carriages;
-	if (!str && !carriages)
+	players = arena->players;
+	if (!str && !players)
 		return (number);
-	else if (!str && carriages)
-		number = ft_find_next_avialable_number(arena->carriages, 1);
+	else if (!str && players)
+		number = ft_find_next_available_number(arena->players, 1);
 	else
 	{
 		number = ft_atoi(*str);
-		while (carriages)
+		while (players)
 		{
-			if (((t_carriage *)(carriages->content))->player_nbr == number)
+			if (((t_player *)(players->content))->player_nbr == number)
 				ft_exit("ERROR: already used player number - ", *str);
-			carriages = carriages->next;
+			players = players->next;
 		}
 	}
 	if (number <= 0 || number > INT32_MAX)
@@ -149,22 +154,33 @@ void *ft_read_code(int *fd, int size, char *file)
 void ft_read_champion(char **str, char **file, t_arena *arena)
 {
 	int fd;
-	t_carriage *carrage;
-	t_list *new_carrage;
+	t_carriage *carriage;
+	t_list *new_carriage;
+	t_player	*player;
+	t_list		*new_player;
 
-	if (!(carrage = (t_carriage *)ft_memalloc(sizeof(*carrage))))
+
+	if (!(carriage = (t_carriage *)ft_memalloc(sizeof(*carriage))))
 		ft_exit("ERROR", NULL);
-	carrage->player_nbr = ft_read_player_number(str, arena);
-	carrage->header = ft_read_header(*file, &fd);
-	carrage->player_code = ft_read_code(&fd, ft_reverse_bytes(carrage->header.prog_size), *file);
-	ft_bzero(&carrage->regs, REG_SIZE * REG_NUMBER);
-	carrage->carry = 1;
-	carrage->regs[0] = -carrage->player_nbr;
-	if (!(new_carrage = ft_lstnew(carrage, sizeof(*carrage))))
+	if (!(player = (t_player *)ft_memalloc(sizeof(t_player))))
 		ft_exit("ERROR", NULL);
-	ft_lstadd(&(arena->carriages), new_carrage);
+	player->player_nbr = ft_read_player_number(str, arena);
+	player->header = ft_read_header(*file, &fd);
+	player->prog_size = ft_reverse_bytes(player->header.prog_size);
+	player->player_code = ft_read_code(&fd, ft_reverse_bytes(player->header.prog_size), *file);
+	ft_bzero(&carriage->regs, REG_SIZE * REG_NUMBER);
+	carriage->carry = 1;
+	carriage->regs[0] = -player->player_nbr;
+	carriage->owner = player;
+	if (!(new_player = ft_lstnew(player, sizeof(t_player))))
+		ft_exit("ERROR", NULL);
+	ft_lstadd(&(arena->players), new_player);
+	if (!(new_carriage = ft_lstnew(carriage, sizeof(*carriage))))
+		ft_exit("ERROR", NULL);
+	ft_lstadd(&(arena->carriages), new_carriage);
 	if (++arena->carriages_nbr > MAX_PLAYERS)
 		ft_exit("ERROR: exeded players maximum", "");
+	arena->players_nbr++;
 }
 
 void ft_read_args(t_arena *arena, int argc, char **argv)
@@ -219,37 +235,44 @@ void ft_put_players_to_arena(t_arena *arena)
 	int delta;
 	unsigned char *ptr;
 	t_list *carriages;
+	t_carriage *carriage;
 
 	ptr = arena->core;
 	carriages = arena->carriages;
 	delta = MEM_SIZE / arena->carriages_nbr;
 	while(carriages)
 	{
-		((t_carriage*)carriages->content)->pos = ptr; 
-		ft_memmove(ptr, ((t_carriage*)carriages->content)->player_code, ft_reverse_bytes(((t_carriage*)carriages->content)->header.prog_size));
+		carriage = (t_carriage *)carriages->content;
+		carriage->pos = ptr;
+		ft_memmove(ptr, carriage->owner->player_code, ft_reverse_bytes(carriage->owner->header.prog_size));
 		ptr += delta;
 		carriages = carriages->next;
 	}
 }
-
 
 int main(int argc, char **argv)
 {
 	t_arena arena;
 	t_list *c;
 
+
 	if (argc < 2)
 		ft_exit("usage: ./corewar [-dump nbr_cycles] [[-n number] champion1.cor] ...", "");
 	ft_init_arena(&arena);
 	ft_read_args(&arena, argc, argv);
 	ft_put_players_to_arena(&arena);
-	ft_start_game(&arena);
-	c = arena.carriages;
-	/*while (c)
+	//ft_start_game(&arena);
+	c = arena.players;
+	/*
+	t_player *player;
+	while (c)
 	{
-		ft_printf("carrage.player_nbr = %d\n", ((t_carriage *)(c->content))->player_nbr);
+		player = (t_player *)c->content;
+		ft_printf("player.player_nbr = %d\n", player->player_nbr);
 		c = c->next;
-	} */
-	ft_print_memory(arena.core, MEM_SIZE);
+	}
+	 */
+	//ft_print_memory(arena.core, MEM_SIZE);
+	visualize(&arena);
 	return (0);
 }

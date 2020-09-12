@@ -3,7 +3,7 @@
 NAME = corewar
 CC = gcc
 FLAGS = -Wall -Werror -Wextra -O3 -g
-LIBRARIES = -lft -L$(LIBFT_DIRECTORY)
+LIBRARIES = -lft -L$(LIBFT_DIRECTORY) -lncurses
 
 INCLUDES = -I$(HEADERS_DIRECTORY) -I$(LIBFT_HEADERS)
 
@@ -19,7 +19,7 @@ HEADERS = $(addprefix $(HEADERS_DIRECTORY), $(HEADERS_LIST))
 
 SOURCES_DIRECTORY = ./sources/
 
-SOURCES_COREWAR_LIST = main.c
+SOURCES_COREWAR_LIST = main.c visualize.c
 
 
 SOURCES_COREWAR = $(addprefix $(SOURCES_DIRECTORY), $(SOURCES_COREWAR_LIST))
@@ -47,7 +47,6 @@ RESET = \033[0m
 
 all: $(NAME)
 	@echo "$(BOLD_RED) Ready! $(RESET)"
-	./corewar
 
 $(NAME): $(LIBFT) $(OBJECTS_DIRECTORY) $(OBJECTS) $(OBJECTS_COREWAR)
 	@$(CC) $(FLAGS) $(LIBRARIES) $(INCLUDES) $(OBJECTS_COREWAR) -o $(NAME)
