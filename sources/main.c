@@ -6,7 +6,7 @@
 /*   By: majosue <majosue@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/09/08 20:32:21 by majosue           #+#    #+#             */
-/*   Updated: 2020/09/11 20:16:18 by majosue          ###   ########.fr       */
+/*   Updated: 2020/09/15 20:19:33 by majosue          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,6 +39,12 @@ void ft_init_arena(t_arena *arena)
 	arena->carriages_nbr = 0;
 	arena->carriages = NULL;
 	arena->dump_nbr_cycles = NULL;
+	arena->players = NULL;
+	arena->cycles_to_die = CYCLE_TO_DIE;
+	arena->live_nbr = 0;
+	arena->nbr_cycles = 0;
+	arena->checks_nbr = 0;
+
 	ft_bzero(arena->core, MEM_SIZE);
 }
 
@@ -60,20 +66,20 @@ void ft_set_dump(char *str, t_arena *arena)
 	}
 }
 
-int ft_find_next_avialable_number(t_list *carriages, int delta)
+int ft_find_next_avialable_number(t_list *players, int delta)
 {
 	int nbr;
 	int is_unic;
 	t_list *head;
 
 	is_unic = 1;
-	head = carriages;
-	nbr = ((t_carriage *)(carriages->content))->player_nbr + delta;
-	while (carriages)
+	head = players;
+	nbr = ((t_player *)(players->content))->nbr + delta;
+	while (players)
 	{
-		if (((t_carriage *)(carriages->content))->player_nbr == nbr)
+		if (((t_player *)(players->content))->nbr == nbr)
 			is_unic = 0;
-		carriages = carriages->next;
+		players = players->next;
 	}
 	if (!is_unic)
 		return (ft_find_next_avialable_number(head, delta + 1));
@@ -83,22 +89,23 @@ int ft_find_next_avialable_number(t_list *carriages, int delta)
 int ft_read_player_number(char **str, t_arena *arena)
 {
 	long number;
-	t_list *carriages;
-
+//	t_list *carriages;
+	t_list *players;
+	
 	number = 1;
-	carriages = arena->carriages;
-	if (!str && !carriages)
+	players = arena->players;
+	if (!str && !players)
 		return (number);
-	else if (!str && carriages)
-		number = ft_find_next_avialable_number(arena->carriages, 1);
+	else if (!str && players)
+		number = ft_find_next_avialable_number(arena->players, 1);
 	else
 	{
 		number = ft_atoi(*str);
-		while (carriages)
+		while (players)
 		{
-			if (((t_carriage *)(carriages->content))->player_nbr == number)
+			if (((t_player *)(players->content))->nbr == number)
 				ft_exit("ERROR: already used player number - ", *str);
-			carriages = carriages->next;
+			players = players->next;
 		}
 	}
 	if (number <= 0 || number > INT32_MAX)
@@ -149,20 +156,22 @@ void *ft_read_code(int *fd, int size, char *file)
 void ft_read_champion(char **str, char **file, t_arena *arena)
 {
 	int fd;
-	t_carriage *carrage;
-	t_list *new_carrage;
+//	t_carriage *carrage;
+//	t_list *new_carrage;
+	t_player *player;
+	t_list	*new_player;
 
-	if (!(carrage = (t_carriage *)ft_memalloc(sizeof(*carrage))))
+	if (!(player = (t_player *)ft_memalloc(sizeof(*player))))
 		ft_exit("ERROR", NULL);
-	carrage->player_nbr = ft_read_player_number(str, arena);
-	carrage->header = ft_read_header(*file, &fd);
-	carrage->player_code = ft_read_code(&fd, ft_reverse_bytes(carrage->header.prog_size), *file);
-	ft_bzero(&carrage->regs, REG_SIZE * REG_NUMBER);
-	carrage->carry = 1;
-	carrage->regs[0] = -carrage->player_nbr; // по методичке Бражника так но почему? Зачем минус нужен?
-	if (!(new_carrage = ft_lstnew(carrage, sizeof(*carrage))))
+	player->nbr = ft_read_player_number(str, arena);
+	player->header = ft_read_header(*file, &fd);
+	player->code = ft_read_code(&fd, ft_reverse_bytes(player->header.prog_size), *file);
+	//ft_bzero(&carrage->regs, REG_SIZE * REG_NUMBER);
+	//carrage->carry = 1;
+	//carrage->regs[0] = -carrage->player_nbr; // по методичке Бражника так но почему? Зачем минус нужен?
+	if (!(new_player = ft_lstnew(player, sizeof(*player))))
 		ft_exit("ERROR", NULL);
-	ft_lstadd(&(arena->carriages), new_carrage);
+	ft_lstadd(&(arena->players), new_player);
 	if (++arena->carriages_nbr > MAX_PLAYERS)
 		ft_exit("ERROR: exeded players maximum", "");
 }
@@ -216,43 +225,110 @@ void ft_print_memory(void *mem, size_t size)
 
 void ft_put_players_to_arena(t_arena *arena)
 {
-	int delta;
-	//unsigned char *ptr;
-	t_list *carriages;
+	t_carriage *carriage;
+	t_list *players;
+	t_list *new_carriage;
 	int pc;
 
-	//ptr = arena->core;
 	pc = 0;
-	carriages = arena->carriages;
-	delta = MEM_SIZE / arena->carriages_nbr;
-	while(carriages)
+	players = arena->players;
+	while(players)
 	{
-		//((t_carriage*)carriages->content)->pos = ptr;
-		((t_carriage*)carriages->content)->pc = pc; 
-		ft_memmove(arena->core + pc, ((t_carriage*)carriages->content)->player_code, ft_reverse_bytes(((t_carriage*)carriages->content)->header.prog_size));
-		pc += delta;
-		carriages = carriages->next;
+		if(!(carriage = (t_carriage*)ft_memalloc(sizeof(*carriage))))
+			ft_exit("ERROR", NULL);
+		carriage->cycles_to_die = &arena->cycles_to_die;
+		carriage->nbr_cycles = &arena->nbr_cycles;
+		carriage->carriages_nbr = &arena->carriages_nbr;
+		carriage->pc = pc;
+		carriage->regs[0] = ((t_player*)players->content)->nbr; 
+		if (!(new_carriage = (ft_lstnew(carriage, sizeof(*carriage)))))
+			ft_exit("ERROR", NULL);
+		ft_lstadd_back(&arena->carriages, new_carriage);
+		ft_memmove(arena->core + pc, ((t_player*)players->content)->code,
+		ft_reverse_bytes(((t_player*)players->content)->header.prog_size));
+		pc += MEM_SIZE / arena->carriages_nbr;
+		players = players->next;
 	}
+	arena->live_id = ((t_carriage*)arena->carriages->content)->regs[0];
 }
 
+/*
+**	Get player with id
+**	Return NULL if player not exist
+*/
+
+t_player	*ft_get_player(t_arena *arena, int id)
+{
+	t_list *players;
+
+	players = arena->players;
+	while (players && id != ((t_player *)players->content)->nbr)
+		players = players->next;
+	if (players)
+		return (((t_player *)players->content));
+	return NULL;
+}
+
+void ft_mark_death_carriages(t_list *carriages)
+{
+	t_carriage *carriage;
+
+	carriage = ((t_carriage *)(carriages->content));
+	if (carriage->death == 0 && (*(carriage->nbr_cycles) - carriage->last_live_cycle) < *(carriage->cycles_to_die))
+		{
+			carriage->death = 1;
+			(*(carriage->carriages_nbr))--;
+		}
+}
+
+int ft_check_arena(t_arena *arena)
+{
+	if (arena->cycles_to_die > 0 && ((arena->nbr_cycles + 1) % arena->cycles_to_die)) 
+		return(0);
+	ft_printf("Cycle #%d check\n", arena->nbr_cycles);
+	ft_lstiter(arena->carriages, ft_mark_death_carriages);	
+	if (arena->carriages_nbr == 0)
+		return(1);
+	if (arena->live_nbr >= NBR_LIVE || arena->checks_nbr >= MAX_CHECKS)
+	{
+		arena->cycles_to_die -= CYCLE_DELTA;
+		arena->checks_nbr = 0;
+	}
+	else 
+		arena->checks_nbr++;
+	arena->live_nbr = 0;
+	return (0);
+}
+
+void ft_start_game(t_arena *arena)
+{
+	while(1)
+	{
+		if (arena->dump_nbr_cycles && *(arena->dump_nbr_cycles) == arena->nbr_cycles)
+		{
+			ft_print_memory(arena->core, MEM_SIZE);
+			break;
+		}
+	 //	ft_run_carriages(arena);
+		if (ft_check_arena(arena))
+			{
+				ft_printf("Player %d (%s) won\n", arena->live_id, ft_get_player(arena, arena->live_id)->header.prog_name);
+				break;
+			}
+		(arena->nbr_cycles)++;
+	}	
+}
 
 int main(int argc, char **argv)
 {
 	t_arena arena;
-	t_list *c;
 
 	if (argc < 2)
 		ft_exit("usage: ./corewar [-dump nbr_cycles] [[-n number] champion1.cor] ...", "");
 	ft_init_arena(&arena);
 	ft_read_args(&arena, argc, argv);
 	ft_put_players_to_arena(&arena);
-//	ft_start_game(&arena);
-	c = arena.carriages;
-	/*while (c)
-	{
-		ft_printf("carrage.player_nbr = %d\n", ((t_carriage *)(c->content))->player_nbr);
-		c = c->next;
-	} */
-	ft_print_memory(arena.core, MEM_SIZE);
+	ft_start_game(&arena);
+	//ft_cleanup(&arena);
 	return (0);
 }
