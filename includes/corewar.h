@@ -77,5 +77,15 @@ typedef struct  s_op
     int     flag2;
 }               t_op;
 
+typedef int    (*t_arg_check)(t_carriage *, t_arg_byte);
+
+int	ft_live_arg_check(t_carriage *carriage, t_arg_byte byte);
+int	ft_ld_arg_check(t_carriage *carriage, t_arg_byte arg);
+int	ft_st_arg_check(t_carriage *carriage, t_arg_byte arg);
+int	ft_add_arg_check(t_carriage *carriage, t_arg_byte arg);
+int	ft_and_arg_check(t_carriage *carriage, t_arg_byte arg);
+int	ft_ldi_arg_check(t_carriage *carriage, t_arg_byte arg);
+int	ft_sti_arg_check(t_carriage *carriage, t_arg_byte arg);
+int	ft_sti_aff_check(t_carriage *carriage, t_arg_byte arg);
 
 #endif //COREWAR_COREWAR_H

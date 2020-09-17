@@ -6,7 +6,7 @@
 /*   By: majosue <majosue@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/09/08 20:32:21 by majosue           #+#    #+#             */
-/*   Updated: 2020/09/17 18:46:15 by majosue          ###   ########.fr       */
+/*   Updated: 2020/09/17 20:34:53 by majosue          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,102 @@
 #include "op.c" // forbiden by norm?
 
 unsigned char g_params[] = {0, REG_SIZE, DIR_SIZE, 0, IND_SIZE};
+
+t_arg_check g_arg_checker[] = {0, ft_live_arg_check, ft_ld_arg_check, 
+ft_st_arg_check, ft_add_arg_check, ft_add_arg_check, ft_and_arg_check, 
+ft_and_arg_check, ft_and_arg_check, ft_live_arg_check, ft_ldi_arg_check, 
+ft_sti_arg_check, ft_live_arg_check, ft_ld_arg_check, ft_ldi_arg_check,
+ft_live_arg_check, ft_sti_aff_check};
+
+
+int	ft_live_arg_check(t_carriage *carriage, t_arg_byte arg)
+{
+(void)carriage;
+//-----debug
+	printf("Come to ft_live_arg_check\n");
+	printf("Arg byte = %#x\narg1 = %d arg2 = %d arg3 = %d arg4 = %d\n", arg.byte, arg.value.at8, arg.value.at6, arg.value.at4, arg.value.at2);
+	exit (0);
+//-----debug
+	return (0);
+}
+
+int	ft_ld_arg_check(t_carriage *carriage, t_arg_byte arg)
+{
+(void)carriage;
+//-----debug
+	printf("Come to ft_ld_arg_check\n");
+	printf("Arg byte = %#x\narg1 = %d arg2 = %d arg3 = %d arg4 = %d\n", arg.byte, arg.value.at8, arg.value.at6, arg.value.at4, arg.value.at2);
+	exit (0);
+//-----debug
+	return (0);
+}
+
+int	ft_st_arg_check(t_carriage *carriage, t_arg_byte arg)
+{
+(void)carriage;
+//-----debug
+	printf("Come to ft_st_arg_check\n");
+	printf("Arg byte = %#x\narg1 = %d arg2 = %d arg3 = %d arg4 = %d\n", arg.byte, arg.value.at8, arg.value.at6, arg.value.at4, arg.value.at2);
+	exit (0);
+//-----debug
+	return (0);
+}
+
+int	ft_add_arg_check(t_carriage *carriage, t_arg_byte arg)
+{
+(void)carriage;
+//-----debug
+	printf("Come to ft_add_arg_check\n");
+	printf("Arg byte = %#x\narg1 = %d arg2 = %d arg3 = %d arg4 = %d\n", arg.byte, arg.value.at8, arg.value.at6, arg.value.at4, arg.value.at2);
+	exit (0);
+//-----debug
+	return (0);
+}
+
+int	ft_and_arg_check(t_carriage *carriage, t_arg_byte arg)
+{
+(void)carriage;
+//-----debug
+	printf("Come to ft_and_arg_check\n");
+	printf("Arg byte = %#x\narg1 = %d arg2 = %d arg3 = %d arg4 = %d\n", arg.byte, arg.value.at8, arg.value.at6, arg.value.at4, arg.value.at2);
+	exit (0);
+//-----debug
+	return (0);
+}
+
+int	ft_ldi_arg_check(t_carriage *carriage, t_arg_byte arg)
+{
+(void)carriage;
+//-----debug
+	printf("Come to ft_ldi_arg_check\n");
+	printf("Arg byte = %#x\narg1 = %d arg2 = %d arg3 = %d arg4 = %d\n", arg.byte, arg.value.at8, arg.value.at6, arg.value.at4, arg.value.at2);
+	exit (0);
+//-----debug
+	return (0);
+}
+
+int	ft_sti_arg_check(t_carriage *carriage, t_arg_byte arg)
+{
+(void)carriage;
+//-----debug
+	printf("Come to ft_sti_arg_check\n");
+	printf("Arg byte = %#x\narg1 = %d arg2 = %d arg3 = %d arg4 = %d\n", arg.byte, arg.value.at8, arg.value.at6, arg.value.at4, arg.value.at2);
+	exit (0);
+//-----debug
+	return (0);
+}
+
+int	ft_sti_aff_check(t_carriage *carriage, t_arg_byte arg)
+{
+(void)carriage;
+//-----debug
+	printf("Come to ft_aff_arg_check\n");
+	printf("Arg byte = %#x\narg1 = %d arg2 = %d arg3 = %d arg4 = %d\n", arg.byte, arg.value.at8, arg.value.at6, arg.value.at4, arg.value.at2);
+	exit (0);
+//-----debug
+	return (0);
+}
+
 
 /*
 **	Exit wraper 
@@ -324,10 +420,9 @@ void ft_run_op(t_carriage *carriage)
 	t_arg_byte	arg;
 	
 	arg.byte = carriage->core[carriage->pc];
-	//-----debug
-	printf("Arg byte = %#x\narg1 = %d arg2 = %d arg3 = %d arg4 = %d\n", arg.byte, arg.value.at8, arg.value.at6, arg.value.at4, arg.value.at2);
-	exit (0);
-	//-----debug
+	if (g_arg_checker[carriage->op](carriage, arg))
+		return;
+	//g_
 }
 
 void ft_run_carriages(t_list *carriages)

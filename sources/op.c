@@ -6,12 +6,14 @@
 /*   By: majosue <majosue@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2013/10/04 11:43:01 by zaz               #+#    #+#             */
-/*   Updated: 2020/09/16 18:20:59 by majosue          ###   ########.fr       */
+/*   Updated: 2020/09/17 20:36:06 by majosue          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "op.h"
 #include "corewar.h"
+
+// Нужно эту табличку дополнить указателями на соответствующие функции
 
 t_op    op_tab[17] =
 {/*   Name  Max_Params           Params										  Opcode Cycles to exec  Description																	*/
