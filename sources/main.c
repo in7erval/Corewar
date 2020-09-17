@@ -6,11 +6,14 @@
 /*   By: majosue <majosue@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/09/08 20:32:21 by majosue           #+#    #+#             */
-/*   Updated: 2020/09/15 20:19:33 by majosue          ###   ########.fr       */
+/*   Updated: 2020/09/17 18:46:15 by majosue          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "corewar.h"
+#include "op.c" // forbiden by norm?
+
+unsigned char g_params[] = {0, REG_SIZE, DIR_SIZE, 0, IND_SIZE};
 
 /*
 **	Exit wraper 
@@ -239,6 +242,8 @@ void ft_put_players_to_arena(t_arena *arena)
 		carriage->cycles_to_die = &arena->cycles_to_die;
 		carriage->nbr_cycles = &arena->nbr_cycles;
 		carriage->carriages_nbr = &arena->carriages_nbr;
+		carriage->core = arena->core;
+		carriage->wait_cmd = 1; 
 		carriage->pc = pc;
 		carriage->regs[0] = ((t_player*)players->content)->nbr; 
 		if (!(new_carriage = (ft_lstnew(carriage, sizeof(*carriage)))))
@@ -273,7 +278,7 @@ void ft_mark_death_carriages(t_list *carriages)
 {
 	t_carriage *carriage;
 
-	carriage = ((t_carriage *)(carriages->content));
+	carriage = carriages->content;
 	if (carriage->death == 0 && (*(carriage->nbr_cycles) - carriage->last_live_cycle) < *(carriage->cycles_to_die))
 		{
 			carriage->death = 1;
@@ -300,6 +305,52 @@ int ft_check_arena(t_arena *arena)
 	return (0);
 }
 
+void	ft_check_op(t_carriage *carriage)
+{
+	if (carriage->op > 0 && carriage->op < 17)
+	{
+		carriage->cycles_to_exec = op_tab[carriage->op].cycles_to_exec;
+		carriage->wait_cmd = 0;
+		carriage->wait_args = 1;
+	//-----debug
+		ft_printf("found op - \"%s\"\n", op_tab[carriage->op].name);
+	//-----debug
+	}
+	carriage->pc = (carriage->pc + 1) % MEM_SIZE;
+}
+
+void ft_run_op(t_carriage *carriage)
+{
+	t_arg_byte	arg;
+	
+	arg.byte = carriage->core[carriage->pc];
+	//-----debug
+	printf("Arg byte = %#x\narg1 = %d arg2 = %d arg3 = %d arg4 = %d\n", arg.byte, arg.value.at8, arg.value.at6, arg.value.at4, arg.value.at2);
+	exit (0);
+	//-----debug
+}
+
+void ft_run_carriages(t_list *carriages)
+{
+	t_carriage *carriage;
+	
+	carriage = carriages->content;
+	if (carriage->death)
+		return;
+	if (!carriage->cycles_to_exec && carriage->wait_cmd)
+	{
+		carriage->op = carriage->core[carriage->pc];
+		ft_check_op(carriage);
+		return;	
+	}
+	if (!carriage->cycles_to_exec && carriage->wait_args)
+	{
+		ft_run_op(carriage);
+		return;
+	}
+	carriage->cycles_to_exec--;
+}
+
 void ft_start_game(t_arena *arena)
 {
 	while(1)
@@ -309,7 +360,7 @@ void ft_start_game(t_arena *arena)
 			ft_print_memory(arena->core, MEM_SIZE);
 			break;
 		}
-	 //	ft_run_carriages(arena);
+	 	ft_lstiter(arena->carriages, ft_run_carriages);
 		if (ft_check_arena(arena))
 			{
 				ft_printf("Player %d (%s) won\n", arena->live_id, ft_get_player(arena, arena->live_id)->header.prog_name);

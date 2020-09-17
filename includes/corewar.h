@@ -21,9 +21,12 @@ typedef struct s_player
 typedef struct s_carriage
 {
     int         pc;
+    int         wait_cmd;
+    int         wait_args;
+    unsigned char   *core;
     int         regs[REG_NUMBER];
     int         carry;
-    int         op;
+    unsigned char         op;
     int         cycles_to_exec;
     int         last_live_cycle;
     int         next_op_distance;
@@ -46,6 +49,21 @@ typedef struct  s_arena
     int             live_id;
     int             checks_nbr;
 }               t_arena;
+
+struct s_byte
+{
+    unsigned at2: 2;
+    unsigned at4: 2;
+    unsigned at6: 2;
+    unsigned at8: 2;
+};
+
+typedef union u_byte
+{
+    unsigned char byte;
+    struct s_byte value;
+}               t_arg_byte;
+
 
 typedef struct  s_op
 {
