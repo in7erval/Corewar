@@ -18,24 +18,6 @@ typedef struct s_player
     void        *code;
 }               t_player;
 
-typedef struct s_carriage
-{
-    int         pc;
-    int         wait_cmd;
-    int         wait_args;
-    unsigned char   *core;
-    int         regs[REG_NUMBER];
-    int         carry;
-    unsigned char         op;
-    int         cycles_to_exec;
-    int         last_live_cycle;
-    int         next_op_distance;
-    int         death;
-    int         *cycles_to_die;
-    int         *nbr_cycles;
-    int         *carriages_nbr;
-}               t_carriage;
-
 typedef struct  s_arena
 {
     int             *dump_nbr_cycles;
@@ -49,6 +31,29 @@ typedef struct  s_arena
     int             live_id;
     int             checks_nbr;
 }               t_arena;
+
+typedef struct s_carriage
+{
+    int         pc;
+    int         wait_cmd;
+    int         wait_args;
+    unsigned char   *core;
+    int         regs[REG_NUMBER + 1];
+    int         carry;
+    unsigned char         op;
+    int         cycles_to_exec;
+    int         last_live_cycle;
+    int         next_op_distance;
+    int         death;
+    void        *params[3];
+    int         values[3];
+   /*  int         *cycles_to_die;
+    int         *nbr_cycles;
+    int         *carriages_nbr; */
+    t_arena     *arena;
+}               t_carriage;
+
+
 
 struct s_byte
 {
@@ -64,6 +69,7 @@ typedef union u_byte
     struct s_byte value;
 }               t_arg_byte;
 
+typedef int    (*t_op_exec)(t_carriage *, int[3]);
 
 typedef struct  s_op
 {
@@ -73,19 +79,36 @@ typedef struct  s_op
     int    op_code;
     int    cycles_to_exec;
     char    *description;
-    int     flag1;
-    int     flag2;
+    int     mod_carry;
+    int     short_dir;
+    t_op_exec f;
 }               t_op;
 
-typedef int    (*t_arg_check)(t_carriage *, t_arg_byte);
 
-int	ft_live_arg_check(t_carriage *carriage, t_arg_byte byte);
-int	ft_ld_arg_check(t_carriage *carriage, t_arg_byte arg);
-int	ft_st_arg_check(t_carriage *carriage, t_arg_byte arg);
-int	ft_add_arg_check(t_carriage *carriage, t_arg_byte arg);
-int	ft_and_arg_check(t_carriage *carriage, t_arg_byte arg);
-int	ft_ldi_arg_check(t_carriage *carriage, t_arg_byte arg);
-int	ft_sti_arg_check(t_carriage *carriage, t_arg_byte arg);
-int	ft_sti_aff_check(t_carriage *carriage, t_arg_byte arg);
+unsigned int ft_reverse_bytes(unsigned int value);
+unsigned short ft_reverse_bytes_short(unsigned short value);
+t_player	*ft_get_player(t_arena *arena, int id);
+
+void ft_exit(char *str, char *str2);
+int	ft_live_arg_check(t_carriage *carriage, int args[3]);
+int	ft_ld_arg_check(t_carriage *carriage, int args[3]);
+int	ft_st_arg_check(t_carriage *carriage, int args[3]);
+int	ft_add_arg_check(t_carriage *carriage, int args[3]);
+int	ft_and_arg_check(t_carriage *carriage, int args[3]);
+int	ft_ldi_arg_check(t_carriage *carriage, int args[3]);
+int	ft_sti_arg_check(t_carriage *carriage, int args[3]);
+int	ft_sti_aff_check(t_carriage *carriage, int args[3]);
+int ft_live(t_carriage *carriage, int args[3]);
+int ft_ld_lld(t_carriage *carriage, int args[3]);
+int ft_st(t_carriage *carriage, int args[3]);
+int ft_add_sub (t_carriage *carriage, int args[3]);
+int ft_and_or_xor (t_carriage *carriage, int args[3]);
+int ft_zjmp(t_carriage *carriage, int args[3]);
+int ft_ldi_lldi(t_carriage *carriage, int args[3]);
+int ft_sti(t_carriage *carriage, int args[3]);
+int ft_fork_lfork(t_carriage *carriage, int args[3]);
+int ft_aff(t_carriage *carriage, int args[3]);
+
+void ft_print_memory(void *mem, size_t size);
 
 #endif //COREWAR_COREWAR_H

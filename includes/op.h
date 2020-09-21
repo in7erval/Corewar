@@ -6,7 +6,7 @@
 /*   By: majosue <majosue@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2013/10/04 11:33:27 by zaz               #+#    #+#             */
-/*   Updated: 2020/09/07 10:28:32 by majosue          ###   ########.fr       */
+/*   Updated: 2020/09/20 14:40:44 by majosue          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,8 +52,8 @@
 typedef char	t_arg_type;
 
 # define T_REG					1
-# define T_DIR					2
-# define T_IND					4
+# define T_DIR					4 // тут было 2
+# define T_IND					2 // тут было 4
 # define T_LAB					8
 
 # define PROG_NAME_LENGTH		(128)

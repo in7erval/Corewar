@@ -6,110 +6,411 @@
 /*   By: majosue <majosue@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/09/08 20:32:21 by majosue           #+#    #+#             */
-/*   Updated: 2020/09/17 20:34:53 by majosue          ###   ########.fr       */
+/*   Updated: 2020/09/21 17:24:24 by majosue          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "corewar.h"
 #include "op.c" // forbiden by norm?
 
-unsigned char g_params[] = {0, REG_SIZE, DIR_SIZE, 0, IND_SIZE};
+/*
+**	g_params for storing sizes of arg types
+**	easy access - g_params[dirsize flag][REG_CODE] = T_REG and so on
+*/
 
-t_arg_check g_arg_checker[] = {0, ft_live_arg_check, ft_ld_arg_check, 
+unsigned char g_params[2][4] = {{0, T_REG, T_DIR, T_IND}, {0, T_REG, T_DIR / 2, T_IND}};
+
+/* t_op_exec g_arg_checker[] = {0, ft_live_arg_check, ft_ld_arg_check, 
 ft_st_arg_check, ft_add_arg_check, ft_add_arg_check, ft_and_arg_check, 
 ft_and_arg_check, ft_and_arg_check, ft_live_arg_check, ft_ldi_arg_check, 
 ft_sti_arg_check, ft_live_arg_check, ft_ld_arg_check, ft_ldi_arg_check,
-ft_live_arg_check, ft_sti_aff_check};
+ft_live_arg_check, ft_sti_aff_check}; */
 
+/*
+**	Move pc to next pos
+*/
 
-int	ft_live_arg_check(t_carriage *carriage, t_arg_byte arg)
+void ft_skip_args(t_carriage *carriage, int args[3], int addon)
 {
-(void)carriage;
-//-----debug
-	printf("Come to ft_live_arg_check\n");
-	printf("Arg byte = %#x\narg1 = %d arg2 = %d arg3 = %d arg4 = %d\n", arg.byte, arg.value.at8, arg.value.at6, arg.value.at4, arg.value.at2);
-	exit (0);
-//-----debug
-	return (0);
+	int i;
+	int skip;
+
+	i = 0;
+	skip = 0;
+	while (i < op_tab[carriage->op].max_params)
+	{
+		skip += g_params[op_tab[carriage->op].short_dir][args[i]];
+		i++;
+	}
+	carriage->pc = (carriage->pc + skip + addon) % MEM_SIZE;
+	carriage->wait_cmd = 1;
+	carriage->wait_args = 0;
 }
 
-int	ft_ld_arg_check(t_carriage *carriage, t_arg_byte arg)
+/*
+**	Check valid registr number 
+**	and store adress of regitr to carriage->params
+*/
+
+int	ft_is_valid_regs(t_carriage *carriage, int args[3])
 {
-(void)carriage;
-//-----debug
-	printf("Come to ft_ld_arg_check\n");
-	printf("Arg byte = %#x\narg1 = %d arg2 = %d arg3 = %d arg4 = %d\n", arg.byte, arg.value.at8, arg.value.at6, arg.value.at4, arg.value.at2);
-	exit (0);
-//-----debug
-	return (0);
+	int i;
+	int pc;
+
+	i = 0;
+	pc = (carriage->pc + 2) % MEM_SIZE;
+	while (i < op_tab[carriage->op].max_params)
+	{
+		if (args[i] == REG_CODE)
+		{
+			if (carriage->core[pc] <= 0 || carriage->core[pc] > REG_NUMBER)
+				return (0);
+			carriage->params[i] = &(carriage->regs[carriage->core[pc]]);
+		}
+			pc = (pc + g_params[op_tab[carriage->op].short_dir][args[i]]) % MEM_SIZE;
+		i++;
+	}
+	return (1);
 }
 
-int	ft_st_arg_check(t_carriage *carriage, t_arg_byte arg)
+int ft_calculate_pc(t_carriage *carriage, int addon)
 {
-(void)carriage;
-//-----debug
-	printf("Come to ft_st_arg_check\n");
-	printf("Arg byte = %#x\narg1 = %d arg2 = %d arg3 = %d arg4 = %d\n", arg.byte, arg.value.at8, arg.value.at6, arg.value.at4, arg.value.at2);
-	exit (0);
-//-----debug
-	return (0);
+	int pc;
+
+	pc = carriage->pc;
+	pc += addon;
+	if (pc < 0)
+		pc = MEM_SIZE + pc;
+	else
+		pc = pc % MEM_SIZE;
+	return (pc);
 }
 
-int	ft_add_arg_check(t_carriage *carriage, t_arg_byte arg)
+int	ft_ld_arg_check(t_carriage *carriage, int args[3])
 {
-(void)carriage;
-//-----debug
-	printf("Come to ft_add_arg_check\n");
-	printf("Arg byte = %#x\narg1 = %d arg2 = %d arg3 = %d arg4 = %d\n", arg.byte, arg.value.at8, arg.value.at6, arg.value.at4, arg.value.at2);
-	exit (0);
-//-----debug
-	return (0);
+	if (!((args[0] == DIR_CODE || args[0] == IND_CODE) &&
+	args[1] == REG_CODE && ft_is_valid_regs(carriage, args)))
+		return (EXIT_FAILURE);
+	return (EXIT_SUCCESS);
 }
 
-int	ft_and_arg_check(t_carriage *carriage, t_arg_byte arg)
+int	ft_st_arg_check(t_carriage *carriage, int args[3])
 {
-(void)carriage;
-//-----debug
-	printf("Come to ft_and_arg_check\n");
-	printf("Arg byte = %#x\narg1 = %d arg2 = %d arg3 = %d arg4 = %d\n", arg.byte, arg.value.at8, arg.value.at6, arg.value.at4, arg.value.at2);
-	exit (0);
-//-----debug
-	return (0);
+	if (args[0] == REG_CODE  && (args[1] == REG_CODE ||
+	args[1] == IND_CODE) && ft_is_valid_regs(carriage, args))
+		return (0);
+	return (1);
 }
 
-int	ft_ldi_arg_check(t_carriage *carriage, t_arg_byte arg)
+int	ft_add_arg_check(t_carriage *carriage, int args[3])
 {
-(void)carriage;
-//-----debug
-	printf("Come to ft_ldi_arg_check\n");
-	printf("Arg byte = %#x\narg1 = %d arg2 = %d arg3 = %d arg4 = %d\n", arg.byte, arg.value.at8, arg.value.at6, arg.value.at4, arg.value.at2);
-	exit (0);
-//-----debug
-	return (0);
+if (args[0] == REG_CODE && args[1] == REG_CODE &&
+args[2] == REG_CODE && ft_is_valid_regs(carriage, args))
+		return (0);
+	return (1);
 }
 
-int	ft_sti_arg_check(t_carriage *carriage, t_arg_byte arg)
+int	ft_and_arg_check(t_carriage *carriage, int args[3])
 {
-(void)carriage;
-//-----debug
-	printf("Come to ft_sti_arg_check\n");
-	printf("Arg byte = %#x\narg1 = %d arg2 = %d arg3 = %d arg4 = %d\n", arg.byte, arg.value.at8, arg.value.at6, arg.value.at4, arg.value.at2);
-	exit (0);
-//-----debug
-	return (0);
+if (args[0] != 0 && args[1] != 0 && args[2] == REG_CODE &&
+ft_is_valid_regs(carriage, args))
+		return (0);
+	return (1);
 }
 
-int	ft_sti_aff_check(t_carriage *carriage, t_arg_byte arg)
+int	ft_ldi_arg_check(t_carriage *carriage, int args[3])
 {
-(void)carriage;
-//-----debug
-	printf("Come to ft_aff_arg_check\n");
-	printf("Arg byte = %#x\narg1 = %d arg2 = %d arg3 = %d arg4 = %d\n", arg.byte, arg.value.at8, arg.value.at6, arg.value.at4, arg.value.at2);
-	exit (0);
-//-----debug
-	return (0);
+if (args[0] != 0 && (args[1] == DIR_CODE ||
+args[1] == IND_CODE) && args[2] == REG_CODE &&
+ft_is_valid_regs(carriage, args))
+		return (0);
+	return (1);
 }
 
+int	ft_sti_arg_check(t_carriage *carriage, int args[3])
+{
+if (args[0] == REG_CODE && args[1] != 0 &&
+(args[2] == DIR_CODE || args[2] == REG_CODE)
+&& ft_is_valid_regs(carriage, args))
+		return (0);
+	return (1);
+}
+
+int	ft_sti_aff_check(t_carriage *carriage, int args[3])
+{
+if (args[0] == REG_CODE && ft_is_valid_regs(carriage, args))
+		return (0);
+	return (1);
+}
+
+int ft_live(t_carriage *carriage, int args[3])
+{
+	(void)args;
+	t_player *player;
+	int id;
+	int fake[3];
+	
+	id = 0;
+	fake[0] = DIR_CODE;
+	ft_memmove(&id, &carriage->core[(carriage->pc + 1) % MEM_SIZE], sizeof(int));
+	id = ft_reverse_bytes(id);
+	ft_skip_args(carriage, fake, 1);
+	if ((player = ft_get_player(carriage->arena, id)))
+	{
+		ft_printf("A process shows that player %d (%s) is alive\n", player->nbr, player->header.prog_name);
+		carriage->arena->live_id = id;
+		carriage->last_live_cycle = carriage->arena->nbr_cycles;
+		carriage->arena->live_nbr++;
+		return (EXIT_SUCCESS);
+	}
+	return (EXIT_FAILURE);
+}
+
+void ft_load_params(t_carriage *carriage, int args[3], int mod)
+{
+	int pc;
+	int i;
+	short ind;
+	
+	pc = (carriage->pc + 2) % MEM_SIZE;
+	i = -1;
+	while (++i < op_tab[carriage->op].max_params)
+	{
+		if (args[i] == DIR_CODE)
+			carriage->params[i] = &carriage->core[pc];
+		if (args[i] == IND_CODE)
+		{
+			ft_memmove(&ind, &carriage->core[pc], sizeof(short));
+			ind = ft_reverse_bytes_short(ind);
+			ind = mod ? ind % IDX_MOD : ind;
+			pc = ft_calculate_pc(carriage, ind);
+			carriage->params[i] = &carriage->core[pc];
+		}
+		pc = (pc + g_params[op_tab[carriage->op].short_dir][args[i]]) % MEM_SIZE;
+	}
+}
+
+int ft_ld_lld(t_carriage *carriage, int args[3])
+{
+	int mod;
+
+	if (ft_ld_arg_check(carriage, args))
+	{
+		ft_skip_args(carriage, args, 2);
+		carriage->carry = 0;
+		return (EXIT_FAILURE);
+	}
+	mod = op_tab[carriage->op].op_code == 2 ? 1 : 0;
+	ft_load_params(carriage, args, mod);
+	ft_memmove(carriage->params[1], carriage->params[0], REG_SIZE);
+	ft_skip_args(carriage, args, 2);
+	carriage->carry = 1;
+	return (EXIT_SUCCESS);
+}
+
+int ft_st(t_carriage *carriage, int args[3])
+{
+	if (ft_st_arg_check(carriage, args))
+	{
+		ft_skip_args(carriage, args, 2);
+		carriage->carry = 0; 
+		return (EXIT_FAILURE);
+	}
+	ft_load_params(carriage, args, 1);
+	ft_memmove(carriage->params[1], carriage->params[0], REG_SIZE);
+	ft_skip_args(carriage, args, 2);
+	carriage->carry = 1;
+	return (EXIT_SUCCESS);
+}
+
+int ft_add_sub (t_carriage *carriage, int args[3])
+{
+	int value1;
+	int value2;
+	int value3;
+
+	if (ft_add_arg_check(carriage, args))
+	{
+		ft_skip_args(carriage, args, 2);
+		carriage->carry = 0; 
+		return (EXIT_FAILURE);
+	}
+	ft_memmove(&value1, carriage->params[0], REG_SIZE);
+	ft_memmove(&value2, carriage->params[1], REG_SIZE);
+	if (op_tab[carriage->op].op_code == 4)
+		value3 = ft_reverse_bytes(value1) + ft_reverse_bytes(value2);
+	else 
+		value3 = ft_reverse_bytes(value1) - ft_reverse_bytes(value2);
+	value3 = ft_reverse_bytes(value3);
+	ft_memmove(carriage->params[2], &value3, REG_SIZE);
+	ft_skip_args(carriage, args, 2);
+	carriage->carry = 1;
+	return (EXIT_SUCCESS);
+}
+
+int ft_and_or_xor(t_carriage *carriage, int args[3])
+{
+	unsigned int value1;
+	unsigned int value2;
+	unsigned int value3;
+
+	if (ft_and_arg_check(carriage, args))
+	{
+		ft_skip_args(carriage, args, 2);
+		carriage->carry = 0; 
+		return (EXIT_FAILURE);
+	}
+	ft_load_params(carriage, args, 1);
+	ft_memmove(&value1, carriage->params[0], REG_SIZE);
+	ft_memmove(&value2, carriage->params[1], REG_SIZE);
+	if (op_tab[carriage->op].op_code == 6)
+		value3 = value1 & value2;
+	else if (op_tab[carriage->op].op_code == 7)
+		value3 = value1 | value2;
+	else 
+		value3 = value1 ^ value2;
+	ft_memmove(carriage->params[2], &value3, REG_SIZE);
+	ft_skip_args(carriage, args, 2);
+	carriage->carry = 1;
+	return (EXIT_SUCCESS);
+}
+
+int ft_zjmp(t_carriage *carriage, int args[3])
+{
+	(void)args;
+	int fake[3];
+	int pc;
+	short ind;
+
+	fake[0] = T_DIR;
+	if (carriage->carry == 0)
+	{
+			ft_skip_args(carriage, fake, 1);
+			return(EXIT_FAILURE);
+	}
+	pc = (carriage->pc + 1) % MEM_SIZE;
+	ft_memmove(&ind, &carriage->core[pc], sizeof(short));
+	ind = ft_reverse_bytes_short(ind);
+	ind = ind % IDX_MOD;
+	pc = ft_calculate_pc(carriage, ind);
+	carriage->pc = pc;
+	carriage->wait_cmd = 1;
+	carriage->wait_args = 0;
+	return(EXIT_SUCCESS);
+}
+
+/*
+**	Load values from params adresses to int (live it bigendian?)
+**	Use DIR_SIZE instead others (we alrady fid adres in load_params)
+*/
+
+void ft_load_values(t_carriage *carriage, int args[3])
+{
+	int i;
+	int size;
+	
+	i = 0;
+	while (i < op_tab[carriage->op].max_params)
+	{
+	size = args[i] == IND_CODE || REG_CODE ? DIR_SIZE : g_params[op_tab[carriage->op].short_dir][args[i]];
+	ft_memmove(&carriage->values[i], carriage->params[i], size);
+	if (size < DIR_SIZE)
+		carriage->values[i] = carriage->values[i] << 16;
+	i++;
+	}
+}
+
+int ft_ldi_lldi(t_carriage *carriage, int args[3])
+{
+	int result;
+	int pc;
+	int mod;
+
+	if (ft_ldi_arg_check(carriage, args))
+	{
+		ft_skip_args(carriage, args, 2);
+		carriage->carry = 0; 
+		return (EXIT_FAILURE);
+	}
+	mod = op_tab[carriage->op].op_code == 10 ? 1 : 0;
+	ft_load_params(carriage, args, mod);
+	ft_load_values(carriage, args);
+	result = ft_reverse_bytes(carriage->values[0]) + ft_reverse_bytes(carriage->values[1]);
+	result = op_tab[carriage->op].op_code == 10 ? result % IDX_MOD : result;
+	pc = ft_calculate_pc(carriage, result);
+	ft_memmove(carriage->params[2], &carriage->core[pc], REG_SIZE);
+	carriage->carry = 1;
+	ft_skip_args(carriage, args, 2);
+	return (EXIT_SUCCESS);
+}
+
+int ft_sti(t_carriage *carriage, int args[3])
+{
+	int result;
+	int pc;
+
+	if (ft_sti_arg_check(carriage, args))
+	{
+		ft_skip_args(carriage, args, 2);
+		carriage->carry = 0; 
+		return (EXIT_FAILURE);
+	}
+	ft_load_params(carriage, args, 1);
+	ft_load_values(carriage, args);
+	result = ft_reverse_bytes(carriage->values[1]) + ft_reverse_bytes(carriage->values[2]);
+	result = result % IDX_MOD;
+	pc = ft_calculate_pc(carriage, result);
+	ft_memmove(carriage->params[0], &carriage->core[pc], REG_SIZE);
+	ft_skip_args(carriage, args, 2);
+	carriage->carry = 1;
+	return (EXIT_SUCCESS);
+}
+
+/*
+**	Не понятно в какое место в порядке просмотра карреток ставить
+*/
+
+int ft_fork_lfork(t_carriage *carriage, int args[3])
+{
+	int fake[3];
+	int mod;
+	t_carriage 	*new_carriage;
+	t_list		*new_node;
+
+	mod = op_tab[carriage->op].op_code == 12 ? 1 : 0;
+	if (!(new_carriage = (t_carriage*)ft_memalloc(sizeof(t_carriage))))
+		ft_exit("ERROR", NULL);
+	ft_memmove(new_carriage, carriage, sizeof(t_carriage));
+	fake[0] = DIR_CODE;
+	ft_load_params(carriage, args, mod);
+	ft_load_values(carriage, args);
+	new_carriage->pc = op_tab[carriage->op].op_code == 12 ? 
+	ft_reverse_bytes(carriage->values[0]) % IDX_MOD : ft_reverse_bytes(carriage->values[0]);
+	new_carriage->pc = ft_calculate_pc(carriage, new_carriage->pc);
+	if (!(new_node = ft_lstnew(new_carriage, sizeof(*new_carriage))))
+		ft_exit("ERROR", NULL);
+	ft_lstadd(&carriage->arena->carriages, new_node);
+	carriage->arena->carriages_nbr++;
+	ft_skip_args(carriage, args, 1);
+	return (EXIT_SUCCESS);
+}
+
+int ft_aff(t_carriage *carriage, int args[3])
+{
+	char c;
+
+	if (!(args[0] == REG_CODE && ft_is_valid_regs(carriage, args)))
+		{
+			ft_skip_args(carriage, args, 2);
+			return(EXIT_FAILURE);
+		}
+	ft_load_params(carriage, args, 1);
+	ft_load_values(carriage, args);
+	c = ft_reverse_bytes(carriage->values[0]) % 256;
+	ft_printf("%c", c);
+	ft_skip_args(carriage, args, 2);
+	return(EXIT_SUCCESS);
+}
 
 /*
 **	Exit wraper 
@@ -131,6 +432,11 @@ unsigned int ft_reverse_bytes(unsigned int value)
 {
 	return (value & 0x000000FFU) << 24 | (value & 0x0000FF00U) << 8 |
 		   (value & 0x00FF0000U) >> 8 | (value & 0xFF000000U) >> 24;
+}
+
+unsigned short ft_reverse_bytes_short(unsigned short value)
+{
+	return (value & 0x00FFU) << 8 | (value & 0xFF00U) >> 8;
 }
 
 void ft_init_arena(t_arena *arena)
@@ -311,7 +617,7 @@ void ft_print_memory(void *mem, size_t size)
 			ft_printf("\n");
 		if (!(i % DUMP_WIDTH))
 		{
-			ft_printf("0x%.4x:", ofset);
+			ft_printf("0x%.4x:", (int)ofset);
 			ofset += DUMP_WIDTH;
 		}
 		//if (!(i % 2))
@@ -335,13 +641,14 @@ void ft_put_players_to_arena(t_arena *arena)
 	{
 		if(!(carriage = (t_carriage*)ft_memalloc(sizeof(*carriage))))
 			ft_exit("ERROR", NULL);
-		carriage->cycles_to_die = &arena->cycles_to_die;
+	/* 	carriage->cycles_to_die = &arena->cycles_to_die;
 		carriage->nbr_cycles = &arena->nbr_cycles;
-		carriage->carriages_nbr = &arena->carriages_nbr;
+		carriage->carriages_nbr = &arena->carriages_nbr; */
 		carriage->core = arena->core;
 		carriage->wait_cmd = 1; 
 		carriage->pc = pc;
-		carriage->regs[0] = ((t_player*)players->content)->nbr; 
+		carriage->arena = arena;
+		carriage->regs[1] = ft_reverse_bytes(((t_player*)players->content)->nbr); 
 		if (!(new_carriage = (ft_lstnew(carriage, sizeof(*carriage)))))
 			ft_exit("ERROR", NULL);
 		ft_lstadd_back(&arena->carriages, new_carriage);
@@ -375,10 +682,10 @@ void ft_mark_death_carriages(t_list *carriages)
 	t_carriage *carriage;
 
 	carriage = carriages->content;
-	if (carriage->death == 0 && (*(carriage->nbr_cycles) - carriage->last_live_cycle) < *(carriage->cycles_to_die))
+	if (carriage->death == 0 && (carriage->arena->nbr_cycles - carriage->last_live_cycle) < carriage->arena->cycles_to_die)
 		{
 			carriage->death = 1;
-			(*(carriage->carriages_nbr))--;
+			carriage->arena->carriages_nbr--;
 		}
 }
 
@@ -412,17 +719,25 @@ void	ft_check_op(t_carriage *carriage)
 		ft_printf("found op - \"%s\"\n", op_tab[carriage->op].name);
 	//-----debug
 	}
-	carriage->pc = (carriage->pc + 1) % MEM_SIZE;
+	else
+		carriage->pc = (carriage->pc + 1) % MEM_SIZE;
 }
 
 void ft_run_op(t_carriage *carriage)
 {
 	t_arg_byte	arg;
+	int args[3];
 	
-	arg.byte = carriage->core[carriage->pc];
-	if (g_arg_checker[carriage->op](carriage, arg))
-		return;
-	//g_
+	arg.byte = carriage->core[(carriage->pc + 1) % MEM_SIZE]; // вот тут + 1 для чтения аргументов
+	args[0] = arg.value.at8;
+	args[1] = arg.value.at6;
+	args[2] = arg.value.at4;
+	if (op_tab[carriage->op].f(carriage, args))
+		{
+		//	ft_skip_args(carriage, args, 2); // не правильно у некоторых комнанд нет байта аргументов
+			return;
+		}
+	
 }
 
 void ft_run_carriages(t_list *carriages)
@@ -441,6 +756,8 @@ void ft_run_carriages(t_list *carriages)
 	if (!carriage->cycles_to_exec && carriage->wait_args)
 	{
 		ft_run_op(carriage);
+		carriage->wait_cmd = 1;
+		carriage->wait_args = 0;
 		return;
 	}
 	carriage->cycles_to_exec--;
@@ -458,7 +775,8 @@ void ft_start_game(t_arena *arena)
 	 	ft_lstiter(arena->carriages, ft_run_carriages);
 		if (ft_check_arena(arena))
 			{
-				ft_printf("Player %d (%s) won\n", arena->live_id, ft_get_player(arena, arena->live_id)->header.prog_name);
+				if (ft_get_player(arena, arena->live_id))
+					ft_printf("Player %d (%s) won\n", arena->live_id, ft_get_player(arena, arena->live_id)->header.prog_name);
 				break;
 			}
 		(arena->nbr_cycles)++;
