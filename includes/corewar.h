@@ -36,7 +36,7 @@ typedef struct s_carriage
 {
     int         pc;
     int         wait_cmd;
-    int         wait_args;
+   // int         wait_args;
     unsigned char   *core;
     int         regs[REG_NUMBER + 1];
     int         carry;

@@ -2,7 +2,7 @@
 
 NAME = corewar
 CC = gcc
-FLAGS = -Wall -Werror -Wextra -O3 -g
+FLAGS = -Wall -Werror -Wextra -g
 LIBRARIES = -lft -L$(LIBFT_DIRECTORY)
 
 INCLUDES = -I$(HEADERS_DIRECTORY) -I$(LIBFT_HEADERS)
