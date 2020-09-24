@@ -90,6 +90,8 @@ unsigned short ft_reverse_bytes_short(unsigned short value);
 t_player	*ft_get_player(t_arena *arena, int id);
 
 void ft_exit(char *str, char *str2);
+void ft_load_params(t_carriage *carriage, int args[3], int mod, int arg_bytes);
+void ft_load_values(t_carriage *carriage, int args[3]);
 int	ft_live_arg_check(t_carriage *carriage, int args[3]);
 int	ft_ld_arg_check(t_carriage *carriage, int args[3]);
 int	ft_st_arg_check(t_carriage *carriage, int args[3]);
