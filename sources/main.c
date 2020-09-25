@@ -6,7 +6,7 @@
 /*   By: majosue <majosue@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/09/08 20:32:21 by majosue           #+#    #+#             */
-/*   Updated: 2020/09/24 20:41:47 by majosue          ###   ########.fr       */
+/*   Updated: 2020/09/25 00:15:02 by majosue          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,12 +19,6 @@
 */
 
 unsigned char g_params[2][4] = {{0, T_REG, T_DIR, T_IND}, {0, T_REG, 2, T_IND}};
-
-/* t_op_exec g_arg_checker[] = {0, ft_live_arg_check, ft_ld_arg_check, 
-ft_st_arg_check, ft_add_arg_check, ft_add_arg_check, ft_and_arg_check, 
-ft_and_arg_check, ft_and_arg_check, ft_live_arg_check, ft_ldi_arg_check, 
-ft_sti_arg_check, ft_live_arg_check, ft_ld_arg_check, ft_ldi_arg_check,
-ft_live_arg_check, ft_sti_aff_check}; */
 
 void ft_memmove_from_core_to_core(void *dst, void *src, t_carriage *carriage, size_t size)
 {
@@ -104,7 +98,6 @@ void ft_skip_args(t_carriage *carriage, int args[3], int addon)
 	}
 	carriage->pc = (carriage->pc + skip + addon) % MEM_SIZE;
 	carriage->wait_cmd = 1;
-	/* carriage->wait_args = 0; */
 }
 
 /*
@@ -219,7 +212,8 @@ int ft_live(t_carriage *carriage, int args[3])
 	ft_skip_args(carriage, fake, 1);
 	if ((player = ft_get_player(carriage->arena, id)))
 	{
-		ft_printf("A process shows that player %d (%s) is alive\n", player->nbr, player->header.prog_name);
+		ft_printf("A process shows that player %d (%s) is alive\n",
+		player->nbr, player->header.prog_name);
 		carriage->arena->live_id = id;
 		carriage->last_live_cycle = carriage->arena->nbr_cycles;
 		carriage->arena->live_nbr++;
@@ -243,7 +237,8 @@ void ft_load_params(t_carriage *carriage, int args[3], int mod, int arg_bytes)
 			carriage->params[i] = &carriage->core[pc];
 		if (args[i] == IND_CODE)
 		{
-			ft_memmove_circle(&ind, &carriage->core[pc], carriage, sizeof(short));
+			ft_memmove_circle(&ind, &carriage->core[pc],
+			carriage, sizeof(short));
 			ind = ft_reverse_bytes_short(ind);
 			ind = mod ? ind % IDX_MOD : ind;
 			ind_pc = ft_calculate_pc(carriage, ind);
@@ -265,11 +260,10 @@ int ft_ld_lld(t_carriage *carriage, int args[3])
 	mod = op_tab[carriage->op].op_code == 2 ? 1 : 0;
 	ft_load_params(carriage, args, mod, 1);
 	ft_load_values(carriage, args);
-	ft_memmove_circle(carriage->params[1], &carriage->values[0], carriage, REG_SIZE);
+	ft_memmove_circle(carriage->params[1],
+	&carriage->values[0], carriage, REG_SIZE);
 	ft_load_values(carriage, args);
 	carriage->carry = carriage->values[1] ? 0 : 1;
-	//ft_print_memory(&carriage->regs[0x4], 4);
-	//exit(0);
 	ft_skip_args(carriage, args, 2);
 	return (EXIT_SUCCESS);
 }
@@ -279,13 +273,16 @@ int ft_st(t_carriage *carriage, int args[3])
 	if (ft_st_arg_check(carriage, args))
 	{
 		ft_skip_args(carriage, args, 2);
-		carriage->carry = 0; 
+		carriage->carry = 0;
 		return (EXIT_FAILURE);
 	}
 	ft_load_params(carriage, args, 1, 1);
-	ft_memmove_circle(carriage->params[1], carriage->params[0], carriage, REG_SIZE);
+	ft_memmove_circle(carriage->params[1],
+	carriage->params[0], carriage, REG_SIZE);
+	ft_load_values(carriage, args);
 	ft_skip_args(carriage, args, 2);
-	carriage->carry = 1;
+//	carriage->carry = carriage->values[1] ? 1 : 0;
+//	carriage->carry = 1;
 	return (EXIT_SUCCESS);
 }
 
@@ -298,7 +295,6 @@ int ft_add_sub (t_carriage *carriage, int args[3])
 	if (ft_add_arg_check(carriage, args))
 	{
 		ft_skip_args(carriage, args, 2);
-		carriage->carry = 0; 
 		return (EXIT_FAILURE);
 	}
 	ft_memmove(&value1, carriage->params[0], REG_SIZE);
@@ -310,7 +306,7 @@ int ft_add_sub (t_carriage *carriage, int args[3])
 	value3 = ft_reverse_bytes(value3);
 	ft_memmove(carriage->params[2], &value3, REG_SIZE);
 	ft_skip_args(carriage, args, 2);
-	carriage->carry = 1;
+	carriage->carry = value3 ? 0 : 1;
 	return (EXIT_SUCCESS);
 }
 
@@ -323,7 +319,6 @@ int ft_and_or_xor(t_carriage *carriage, int args[3])
 	if (ft_and_arg_check(carriage, args))
 	{
 		ft_skip_args(carriage, args, 2);
-		carriage->carry = 0; 
 		return (EXIT_FAILURE);
 	}
 	ft_load_params(carriage, args, 1, 1);
@@ -337,7 +332,7 @@ int ft_and_or_xor(t_carriage *carriage, int args[3])
 		value3 = value1 ^ value2;	
 	ft_memmove_circle(carriage->params[2], &value3, carriage, REG_SIZE);
 	ft_skip_args(carriage, args, 2);
-	carriage->carry = 1;
+	carriage->carry = value3 ? 0 : 1;
 	return (EXIT_SUCCESS);
 }
 
@@ -353,7 +348,7 @@ int ft_zjmp(t_carriage *carriage, int args[3])
 			ft_skip_args(carriage, fake, 1);
 			return(EXIT_FAILURE);
 	}
-	ft_load_params(carriage, fake, 1, 0); // надо из таблички брать и мод и присутствие аргументов
+	ft_load_params(carriage, fake, 1, 0);
 	ft_load_values(carriage, fake);
 	pc = ft_calculate_pc(carriage, ft_reverse_bytes(carriage->values[0]));
 	carriage->pc = pc;
@@ -362,8 +357,9 @@ int ft_zjmp(t_carriage *carriage, int args[3])
 }
 
 /*
-**	Load values from params adresses to int (live it bigendian?)
-**	Use DIR_SIZE instead others (we alrady fid adres in load_params)
+**	Load values from params adresses to int (live it bigendian)
+**	Use DIR_SIZE instead others (we alrady get adreses in load_params)
+**	op 0x0d  t_dir = 2 in subject example exec corwar 
 */
 
 void ft_load_values(t_carriage *carriage, int args[3])
@@ -375,8 +371,10 @@ void ft_load_values(t_carriage *carriage, int args[3])
 	i = 0;
 	while (i < op_tab[carriage->op].max_params)
 	{
-	size = args[i] == IND_CODE || args[i] == REG_CODE ? DIR_SIZE : g_params[op_tab[carriage->op].short_dir][args[i]];
-	size = args[i] == IND_CODE && op_tab[carriage->op].op_code == 0x0d ? 2 : size;
+		size = args[i] == IND_CODE || args[i] == REG_CODE ? DIR_SIZE :
+		g_params[op_tab[carriage->op].short_dir][args[i]];
+		size = args[i] == IND_CODE &&
+		op_tab[carriage->op].op_code == 0x0d ? 2 :size;
 	if (size < DIR_SIZE)
 	{
 		ft_memmove_circle(&buffer, carriage->params[i], carriage, size);
@@ -385,8 +383,8 @@ void ft_load_values(t_carriage *carriage, int args[3])
 		carriage->values[i] = ft_reverse_bytes(carriage->values[i]);
 	}
 	else 
-		ft_memmove_circle(&carriage->values[i], carriage->params[i], carriage, size);
-	//carriage->values[i] = carriage->values[i] << 16;
+		ft_memmove_circle(&carriage->values[i], carriage->params[i], carriage,
+		size);
 	i++;
 	}
 }
@@ -395,23 +393,25 @@ int ft_ldi_lldi(t_carriage *carriage, int args[3])
 {
 	int result;
 	int pc;
-	int mod;
 
 	if (ft_ldi_arg_check(carriage, args))
 	{
 		ft_skip_args(carriage, args, 2);
-		carriage->carry = 0; 
 		return (EXIT_FAILURE);
 	}
-	//mod = op_tab[carriage->op].op_code == 10 ? 1 : 0;
-	mod = 1; // original compabiblty bug
-	ft_load_params(carriage, args, mod, 1);
+	ft_load_params(carriage, args, 1, 1);
 	ft_load_values(carriage, args);
-	result = ft_reverse_bytes(carriage->values[0]) + ft_reverse_bytes(carriage->values[1]);
+	result = ft_reverse_bytes(carriage->values[0]) +
+	ft_reverse_bytes(carriage->values[1]);
 	result = op_tab[carriage->op].op_code == 10 ? result % IDX_MOD : result;
 	pc = ft_calculate_pc(carriage, result);
-	ft_memmove_circle(carriage->params[2], &carriage->core[pc], carriage, REG_SIZE);
-	carriage->carry = 1;
+	ft_memmove_circle(carriage->params[2], &carriage->core[pc],
+	carriage, REG_SIZE);
+	ft_load_values(carriage, args);
+	if (op_tab[carriage->op].op_code == 10)
+		carriage->carry = carriage->values[2] ? 1 : 0;
+	else
+		carriage->carry = carriage->values[2] ? 0 : 1;
 	ft_skip_args(carriage, args, 2);
 	return (EXIT_SUCCESS);
 }
@@ -424,7 +424,6 @@ int ft_sti(t_carriage *carriage, int args[3])
 	if (ft_sti_arg_check(carriage, args))
 	{
 		ft_skip_args(carriage, args, 2);
-		carriage->carry = 0; 
 		return (EXIT_FAILURE);
 	}
 	ft_load_params(carriage, args, 1, 1);
@@ -433,8 +432,8 @@ int ft_sti(t_carriage *carriage, int args[3])
 	result = result % IDX_MOD;
 	pc = ft_calculate_pc(carriage, result);
 	ft_memmove_circle(&carriage->core[pc], carriage->params[0], carriage, REG_SIZE);
+	carriage->carry = carriage->values[0] ? 1 : 0;
 	ft_skip_args(carriage, args, 2);
-	carriage->carry = 1;
 	return (EXIT_SUCCESS);
 }
 
@@ -478,6 +477,7 @@ int ft_aff(t_carriage *carriage, int args[3])
 	ft_load_params(carriage, args, 1, 1);
 	ft_load_values(carriage, args);
 	c = ft_reverse_bytes(carriage->values[0]);
+	carriage->carry = carriage->values[0] ? 1 : 0;
 	c = c % 256;
 	ft_printf("Aff: %c\n", c);
 	ft_skip_args(carriage, args, 2);
@@ -786,7 +786,6 @@ void	ft_check_op(t_carriage *carriage)
 	{
 		carriage->cycles_to_exec = op_tab[carriage->op].cycles_to_exec - 2;
 		carriage->wait_cmd = 0;
-	//	carriage->wait_args = 1;
 	//-----debug
 	//	ft_printf("found op - \"%s\"\n", op_tab[carriage->op].name);
 	//-----debug
