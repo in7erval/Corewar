@@ -6,7 +6,7 @@
 /*   By: majosue <majosue@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/09/08 20:32:21 by majosue           #+#    #+#             */
-/*   Updated: 2020/09/25 00:15:02 by majosue          ###   ########.fr       */
+/*   Updated: 2020/09/25 12:17:21 by majosue          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -197,31 +197,6 @@ if (args[0] == REG_CODE && ft_is_valid_regs(carriage, args))
 	return (1);
 }
 
-int ft_live(t_carriage *carriage, int args[3])
-{
-	(void)args;
-	t_player *player;
-	int fake[3];
-	int id;
-	
-	fake[0] = DIR_CODE;
-	ft_load_params(carriage, fake, 1, 0);
-	ft_load_values(carriage, fake);
-	id = ft_reverse_bytes(carriage->values[0]);
-	id = -id;
-	ft_skip_args(carriage, fake, 1);
-	if ((player = ft_get_player(carriage->arena, id)))
-	{
-		ft_printf("A process shows that player %d (%s) is alive\n",
-		player->nbr, player->header.prog_name);
-		carriage->arena->live_id = id;
-		carriage->last_live_cycle = carriage->arena->nbr_cycles;
-		carriage->arena->live_nbr++;
-		return (EXIT_SUCCESS);
-	}
-	return (EXIT_FAILURE);
-}
-
 void ft_load_params(t_carriage *carriage, int args[3], int mod, int arg_bytes)
 {
 	int pc;
@@ -246,6 +221,64 @@ void ft_load_params(t_carriage *carriage, int args[3], int mod, int arg_bytes)
 		}
 		pc = (pc + g_params[op_tab[carriage->op].short_dir][args[i]]) % MEM_SIZE;
 	}
+}
+
+/*
+**	Load values from params adresses to int (live it bigendian)
+**	Use DIR_SIZE instead others (we alrady get adreses in load_params)
+**	op 0x0d  t_dir = 2 in subject example exec corwar 
+*/
+
+void ft_load_values(t_carriage *carriage, int args[3])
+{
+	int i;
+	int size;
+	short buffer;
+	
+	i = 0;
+	while (i < op_tab[carriage->op].max_params)
+	{
+		size = args[i] == IND_CODE || args[i] == REG_CODE ? DIR_SIZE :
+		g_params[op_tab[carriage->op].short_dir][args[i]];
+		size = args[i] == IND_CODE &&
+		op_tab[carriage->op].op_code == 0x0d ? 2 :size;
+	if (size < DIR_SIZE)
+	{
+		ft_memmove_circle(&buffer, carriage->params[i], carriage, size);
+		buffer = ft_reverse_bytes_short(buffer);
+		carriage->values[i] = buffer;
+		carriage->values[i] = ft_reverse_bytes(carriage->values[i]);
+	}
+	else 
+		ft_memmove_circle(&carriage->values[i], carriage->params[i], carriage,
+		size);
+	i++;
+	}
+}
+
+int ft_live(t_carriage *carriage, int args[3])
+{
+	(void)args;
+	t_player *player;
+	int fake[3];
+	int id;
+	
+	fake[0] = DIR_CODE;
+	ft_load_params(carriage, fake, 1, 0);
+	ft_load_values(carriage, fake);
+	id = ft_reverse_bytes(carriage->values[0]);
+	id = -id;
+	ft_skip_args(carriage, fake, 1);
+	if ((player = ft_get_player(carriage->arena, id)))
+	{
+		ft_printf("A process shows that player %d (%s) is alive\n",
+		player->nbr, player->header.prog_name);
+		carriage->arena->live_id = id;
+		//return (EXIT_SUCCESS);
+	}
+	carriage->last_live_cycle = carriage->arena->nbr_cycles;
+	carriage->arena->live_nbr++;
+	return (EXIT_FAILURE);
 }
 
 int ft_ld_lld(t_carriage *carriage, int args[3])
@@ -273,7 +306,6 @@ int ft_st(t_carriage *carriage, int args[3])
 	if (ft_st_arg_check(carriage, args))
 	{
 		ft_skip_args(carriage, args, 2);
-		carriage->carry = 0;
 		return (EXIT_FAILURE);
 	}
 	ft_load_params(carriage, args, 1, 1);
@@ -281,8 +313,6 @@ int ft_st(t_carriage *carriage, int args[3])
 	carriage->params[0], carriage, REG_SIZE);
 	ft_load_values(carriage, args);
 	ft_skip_args(carriage, args, 2);
-//	carriage->carry = carriage->values[1] ? 1 : 0;
-//	carriage->carry = 1;
 	return (EXIT_SUCCESS);
 }
 
@@ -356,39 +386,6 @@ int ft_zjmp(t_carriage *carriage, int args[3])
 	return(EXIT_SUCCESS);
 }
 
-/*
-**	Load values from params adresses to int (live it bigendian)
-**	Use DIR_SIZE instead others (we alrady get adreses in load_params)
-**	op 0x0d  t_dir = 2 in subject example exec corwar 
-*/
-
-void ft_load_values(t_carriage *carriage, int args[3])
-{
-	int i;
-	int size;
-	short buffer;
-	
-	i = 0;
-	while (i < op_tab[carriage->op].max_params)
-	{
-		size = args[i] == IND_CODE || args[i] == REG_CODE ? DIR_SIZE :
-		g_params[op_tab[carriage->op].short_dir][args[i]];
-		size = args[i] == IND_CODE &&
-		op_tab[carriage->op].op_code == 0x0d ? 2 :size;
-	if (size < DIR_SIZE)
-	{
-		ft_memmove_circle(&buffer, carriage->params[i], carriage, size);
-		buffer = ft_reverse_bytes_short(buffer);
-		carriage->values[i] = buffer;
-		carriage->values[i] = ft_reverse_bytes(carriage->values[i]);
-	}
-	else 
-		ft_memmove_circle(&carriage->values[i], carriage->params[i], carriage,
-		size);
-	i++;
-	}
-}
-
 int ft_ldi_lldi(t_carriage *carriage, int args[3])
 {
 	int result;
@@ -432,7 +429,6 @@ int ft_sti(t_carriage *carriage, int args[3])
 	result = result % IDX_MOD;
 	pc = ft_calculate_pc(carriage, result);
 	ft_memmove_circle(&carriage->core[pc], carriage->params[0], carriage, REG_SIZE);
-	carriage->carry = carriage->values[0] ? 1 : 0;
 	ft_skip_args(carriage, args, 2);
 	return (EXIT_SUCCESS);
 }
@@ -477,7 +473,6 @@ int ft_aff(t_carriage *carriage, int args[3])
 	ft_load_params(carriage, args, 1, 1);
 	ft_load_values(carriage, args);
 	c = ft_reverse_bytes(carriage->values[0]);
-	carriage->carry = carriage->values[0] ? 1 : 0;
 	c = c % 256;
 	ft_printf("Aff: %c\n", c);
 	ft_skip_args(carriage, args, 2);
@@ -633,8 +628,6 @@ void *ft_read_code(int *fd, int size, char *file)
 void ft_read_champion(char **str, char **file, t_arena *arena)
 {
 	int fd;
-//	t_carriage *carrage;
-//	t_list *new_carrage;
 	t_player *player;
 	t_list	*new_player;
 
@@ -643,9 +636,6 @@ void ft_read_champion(char **str, char **file, t_arena *arena)
 	player->nbr = ft_read_player_number(str, arena);
 	player->header = ft_read_header(*file, &fd);
 	player->code = ft_read_code(&fd, ft_reverse_bytes(player->header.prog_size), *file);
-	//ft_bzero(&carrage->regs, REG_SIZE * REG_NUMBER);
-	//carrage->carry = 1;
-	//carrage->regs[0] = -carrage->player_nbr; // по методичке Бражника так но почему? Зачем минус нужен?
 	if (!(new_player = ft_lstnew(player, sizeof(*player))))
 		ft_exit("ERROR", NULL);
 	ft_lstadd(&(arena->players), new_player);
@@ -713,9 +703,6 @@ void ft_put_players_to_arena(t_arena *arena)
 	{
 		if(!(carriage = (t_carriage*)ft_memalloc(sizeof(*carriage))))
 			ft_exit("ERROR", NULL);
-	/* 	carriage->cycles_to_die = &arena->cycles_to_die;
-		carriage->nbr_cycles = &arena->nbr_cycles;
-		carriage->carriages_nbr = &arena->carriages_nbr; */
 		carriage->core = arena->core;
 		carriage->wait_cmd = 1; 
 		carriage->pc = pc;
@@ -729,7 +716,7 @@ void ft_put_players_to_arena(t_arena *arena)
 		pc += MEM_SIZE / arena->carriages_nbr;
 		players = players->next;
 	}
-	arena->live_id = ((t_carriage*)arena->carriages->content)->regs[0];
+	arena->live_id = -ft_reverse_bytes(carriage->regs[1]);
 }
 
 /*
@@ -841,20 +828,21 @@ void ft_start_game(t_arena *arena)
 {
 	ft_printf("Introducing contestants...\n");
 	ft_lstiter(arena->players, ft_introduce);
-	while(arena->nbr_cycles < 10000)
+	while(1)
 	{
 		if (arena->dump_nbr_cycles && *(arena->dump_nbr_cycles) == arena->nbr_cycles)
 		{
 			ft_print_memory(arena->core, MEM_SIZE);
 			break;
 		}
+		
 	 	ft_lstiter(arena->carriages, ft_run_carriages);
-		/* if (ft_check_arena(arena))
+		if (ft_check_arena(arena))
 			{
 				if (ft_get_player(arena, arena->live_id))
 					ft_printf("Contestant %d, \"%s\", has won !\n", arena->live_id, ft_get_player(arena, arena->live_id)->header.prog_name);
 				break;
-			} */
+			}
 		(arena->nbr_cycles)++;
 	}	
 }

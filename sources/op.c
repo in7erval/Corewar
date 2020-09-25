@@ -6,7 +6,7 @@
 /*   By: majosue <majosue@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2013/10/04 11:43:01 by zaz               #+#    #+#             */
-/*   Updated: 2020/09/21 16:32:58 by majosue          ###   ########.fr       */
+/*   Updated: 2020/09/25 12:12:43 by majosue          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 
 
 t_op    op_tab[17] =
-{/*   Name  Max_Params           Params										  Opcode Cycles to exec  Description		   			carry	short_dir */
+{/*   Name  Max_Params           Params										  Opcode Cycles to exec  Description		   		What is it?	short_dir */
 	{0,				0, {0},														0,		0, 			0, 									0, 		0, 0},
 	{"live",		1, {T_DIR},													1,		10, 		"alive", 							0, 		0, ft_live},
 	{"ld",			2, {T_DIR | T_IND, T_REG},									2,		5, 			"load", 							1, 		0, ft_ld_lld},
