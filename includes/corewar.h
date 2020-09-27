@@ -35,6 +35,7 @@ typedef struct  s_arena
 
 typedef struct s_carriage
 {
+    int         id;
     int         pc;
     int         wait_cmd;
    // int         wait_args;

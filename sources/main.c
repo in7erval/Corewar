@@ -6,7 +6,7 @@
 /*   By: majosue <majosue@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/09/08 20:32:21 by majosue           #+#    #+#             */
-/*   Updated: 2020/09/27 14:43:22 by majosue          ###   ########.fr       */
+/*   Updated: 2020/09/27 20:42:09 by majosue          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -271,13 +271,13 @@ int ft_live(t_carriage *carriage, int args[3])
 	ft_skip_args(carriage, fake, 1);
 	if ((player = ft_get_player(carriage->arena, id)))
 	{
-		ft_printf("A process shows that player %d (%s) is alive\n",
-		player->nbr, player->header.prog_name);
+		/* ft_printf("A process shows that player %d (%s) is alive\n",
+		player->nbr, player->header.prog_name); */
 		carriage->arena->live_id = id;
 		//return (EXIT_SUCCESS);
 	}
 	carriage->arena->live_nbr++;
-	carriage->last_live_cycle = carriage->arena->nbr_cycles + 1;
+	carriage->last_live_cycle = carriage->arena->nbr_cycles;
 	return (EXIT_FAILURE);
 }
 
@@ -708,10 +708,11 @@ void ft_put_players_to_arena(t_arena *arena)
 		carriage->wait_cmd = 1; 
 		carriage->pc = pc;
 		carriage->arena = arena;
+		carriage->id = ((t_player*)players->content)->nbr;
 		carriage->regs[1] = ft_reverse_bytes(-((t_player*)players->content)->nbr); 
 		if (!(new_carriage = (ft_lstnew(carriage, sizeof(*carriage)))))
 			ft_exit("ERROR", NULL);
-		ft_lstadd_back(&arena->carriages, new_carriage);
+		ft_lstadd(&arena->carriages, new_carriage);
 		ft_memmove(arena->core + pc, ((t_player*)players->content)->code,
 		ft_reverse_bytes(((t_player*)players->content)->header.prog_size));
 		pc += MEM_SIZE / arena->carriages_nbr;
@@ -742,7 +743,7 @@ void ft_mark_death_carriages(t_list *carriages)
 	t_carriage *carriage;
 
 	carriage = carriages->content;
-	if (carriage->death == 0 && (carriage->arena->nbr_cycles + 1 - carriage->last_live_cycle) >= carriage->arena->cycles_to_die)
+	if (carriage->death == 0 && (carriage->arena->nbr_cycles - carriage->last_live_cycle) >= carriage->arena->cycles_to_die)
 		{
 			carriage->death = 1;
 			carriage->arena->carriages_nbr--;
@@ -751,9 +752,9 @@ void ft_mark_death_carriages(t_list *carriages)
 
 int ft_check_arena(t_arena *arena)
 {
-	if (arena->cycles_to_die > 0 && ((arena->nbr_cycles - arena->cycle_change_cycles_to_die + 1) % arena->cycles_to_die)) 
+	if (arena->cycles_to_die > 0 && ((arena->nbr_cycles - arena->cycle_change_cycles_to_die) &&
+	(arena->nbr_cycles - arena->cycle_change_cycles_to_die) % arena->cycles_to_die)) 
 		return(0);
-	//ft_printf("Cycle #%d check\n", arena->nbr_cycles);
 	ft_lstiter(arena->carriages, ft_mark_death_carriages);	
 	if (arena->carriages_nbr == 0)
 		return(1);
@@ -761,10 +762,9 @@ int ft_check_arena(t_arena *arena)
 	{
 		arena->cycles_to_die -= CYCLE_DELTA;
 		arena->checks_nbr = 0;
-		arena->cycle_change_cycles_to_die = arena->nbr_cycles + 1;
+		arena->cycle_change_cycles_to_die = arena->nbr_cycles;
 	}
-	else 
-		arena->checks_nbr++;
+	arena->checks_nbr++;
 	arena->live_nbr = 0;
 	return (0);
 }
@@ -775,9 +775,6 @@ void	ft_check_op(t_carriage *carriage)
 	{
 		carriage->cycles_to_exec = op_tab[carriage->op].cycles_to_exec - 2;
 		carriage->wait_cmd = 0;
-	//-----debug
-	//	ft_printf("found op - \"%s\"\n", op_tab[carriage->op].name);
-	//-----debug
 	}
 	else
 		carriage->pc = (carriage->pc + 1) % MEM_SIZE;
@@ -837,6 +834,7 @@ void ft_start_game(t_arena *arena)
 			ft_print_memory(arena->core, MEM_SIZE);
 			break;
 		}
+		(arena->nbr_cycles)++;
 	 	ft_lstiter(arena->carriages, ft_run_carriages);
 		if (ft_check_arena(arena))
 			{
@@ -844,7 +842,6 @@ void ft_start_game(t_arena *arena)
 					ft_printf("Contestant %d, \"%s\", has won !\n", arena->live_id, ft_get_player(arena, arena->live_id)->header.prog_name);
 				break;
 			}
-		(arena->nbr_cycles)++;
 	}	
 }
 
@@ -858,7 +855,6 @@ int main(int argc, char **argv)
 	ft_read_args(&arena, argc, argv);
 	ft_put_players_to_arena(&arena);
 	ft_start_game(&arena);
-	//ft_print_memory(arena.core, MEM_SIZE);
 	//ft_cleanup(&arena);
 	return (0);
 }
