@@ -6,7 +6,7 @@
 /*   By: majosue <majosue@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/09/08 20:32:21 by majosue           #+#    #+#             */
-/*   Updated: 2020/09/27 13:56:12 by majosue          ###   ########.fr       */
+/*   Updated: 2020/09/27 14:43:22 by majosue          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -742,7 +742,7 @@ void ft_mark_death_carriages(t_list *carriages)
 	t_carriage *carriage;
 
 	carriage = carriages->content;
-	if (carriage->death == 0 && (carriage->arena->nbr_cycles - carriage->last_live_cycle) >= carriage->arena->cycles_to_die)
+	if (carriage->death == 0 && (carriage->arena->nbr_cycles + 1 - carriage->last_live_cycle) >= carriage->arena->cycles_to_die)
 		{
 			carriage->death = 1;
 			carriage->arena->carriages_nbr--;
@@ -761,7 +761,7 @@ int ft_check_arena(t_arena *arena)
 	{
 		arena->cycles_to_die -= CYCLE_DELTA;
 		arena->checks_nbr = 0;
-		arena->cycle_change_cycles_to_die = arena->nbr_cycles;
+		arena->cycle_change_cycles_to_die = arena->nbr_cycles + 1;
 	}
 	else 
 		arena->checks_nbr++;
