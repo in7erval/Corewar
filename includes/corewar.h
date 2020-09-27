@@ -27,6 +27,7 @@ typedef struct  s_arena
     t_list          *carriages;
     int             nbr_cycles;
     int             cycles_to_die;
+    id_t            cycle_change_cycles_to_die;
     int             live_nbr;
     int             live_id;
     int             checks_nbr;

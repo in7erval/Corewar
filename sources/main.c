@@ -6,7 +6,7 @@
 /*   By: majosue <majosue@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/09/08 20:32:21 by majosue           #+#    #+#             */
-/*   Updated: 2020/09/25 12:17:21 by majosue          ###   ########.fr       */
+/*   Updated: 2020/09/27 13:56:12 by majosue          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -276,8 +276,8 @@ int ft_live(t_carriage *carriage, int args[3])
 		carriage->arena->live_id = id;
 		//return (EXIT_SUCCESS);
 	}
-	carriage->last_live_cycle = carriage->arena->nbr_cycles;
 	carriage->arena->live_nbr++;
+	carriage->last_live_cycle = carriage->arena->nbr_cycles + 1;
 	return (EXIT_FAILURE);
 }
 
@@ -513,6 +513,7 @@ void ft_init_arena(t_arena *arena)
 	arena->dump_nbr_cycles = NULL;
 	arena->players = NULL;
 	arena->cycles_to_die = CYCLE_TO_DIE;
+	arena->cycle_change_cycles_to_die = 0;
 	arena->live_nbr = 0;
 	arena->nbr_cycles = 0;
 	arena->checks_nbr = 0;
@@ -638,7 +639,7 @@ void ft_read_champion(char **str, char **file, t_arena *arena)
 	player->code = ft_read_code(&fd, ft_reverse_bytes(player->header.prog_size), *file);
 	if (!(new_player = ft_lstnew(player, sizeof(*player))))
 		ft_exit("ERROR", NULL);
-	ft_lstadd(&(arena->players), new_player);
+	ft_lstadd_back(&(arena->players), new_player);
 	if (++arena->carriages_nbr > MAX_PLAYERS)
 		ft_exit("ERROR: exeded players maximum", "");
 }
@@ -741,7 +742,7 @@ void ft_mark_death_carriages(t_list *carriages)
 	t_carriage *carriage;
 
 	carriage = carriages->content;
-	if (carriage->death == 0 && (carriage->arena->nbr_cycles - carriage->last_live_cycle) < carriage->arena->cycles_to_die)
+	if (carriage->death == 0 && (carriage->arena->nbr_cycles - carriage->last_live_cycle) >= carriage->arena->cycles_to_die)
 		{
 			carriage->death = 1;
 			carriage->arena->carriages_nbr--;
@@ -750,7 +751,7 @@ void ft_mark_death_carriages(t_list *carriages)
 
 int ft_check_arena(t_arena *arena)
 {
-	if (arena->cycles_to_die > 0 && ((arena->nbr_cycles + 1) % arena->cycles_to_die)) 
+	if (arena->cycles_to_die > 0 && ((arena->nbr_cycles - arena->cycle_change_cycles_to_die + 1) % arena->cycles_to_die)) 
 		return(0);
 	//ft_printf("Cycle #%d check\n", arena->nbr_cycles);
 	ft_lstiter(arena->carriages, ft_mark_death_carriages);	
@@ -760,6 +761,7 @@ int ft_check_arena(t_arena *arena)
 	{
 		arena->cycles_to_die -= CYCLE_DELTA;
 		arena->checks_nbr = 0;
+		arena->cycle_change_cycles_to_die = arena->nbr_cycles;
 	}
 	else 
 		arena->checks_nbr++;
@@ -835,7 +837,6 @@ void ft_start_game(t_arena *arena)
 			ft_print_memory(arena->core, MEM_SIZE);
 			break;
 		}
-		
 	 	ft_lstiter(arena->carriages, ft_run_carriages);
 		if (ft_check_arena(arena))
 			{
@@ -857,6 +858,7 @@ int main(int argc, char **argv)
 	ft_read_args(&arena, argc, argv);
 	ft_put_players_to_arena(&arena);
 	ft_start_game(&arena);
+	//ft_print_memory(arena.core, MEM_SIZE);
 	//ft_cleanup(&arena);
 	return (0);
 }
