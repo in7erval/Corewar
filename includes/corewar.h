@@ -32,6 +32,7 @@ typedef struct  s_arena
     int             live_nbr;
     int             live_id;
     int             checks_nbr;
+    int         dbg_counter;
 }               t_arena;
 
 typedef struct s_carriage
