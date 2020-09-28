@@ -22,6 +22,7 @@ typedef struct  s_arena
 {
     int             *dump_nbr_cycles;
     int             carriages_nbr;
+    int             carriage_index;
     unsigned char   core[MEM_SIZE];
     t_list          *players;        
     t_list          *carriages;

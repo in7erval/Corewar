@@ -6,7 +6,7 @@
 /*   By: majosue <majosue@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/09/08 20:32:21 by majosue           #+#    #+#             */
-/*   Updated: 2020/09/27 20:42:09 by majosue          ###   ########.fr       */
+/*   Updated: 2020/09/28 08:17:30 by majosue          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -380,7 +380,9 @@ int ft_zjmp(t_carriage *carriage, int args[3])
 	}
 	ft_load_params(carriage, fake, 1, 0);
 	ft_load_values(carriage, fake);
-	pc = ft_calculate_pc(carriage, ft_reverse_bytes(carriage->values[0]));
+	pc = ft_reverse_bytes(carriage->values[0]);
+	pc = pc % IDX_MOD;
+	pc = ft_calculate_pc(carriage, pc);
 	carriage->pc = pc;
 	carriage->wait_cmd = 1;
 	return(EXIT_SUCCESS);
@@ -452,10 +454,12 @@ int ft_fork_lfork(t_carriage *carriage, int args[3])
 	new_carriage->pc = op_tab[carriage->op].op_code == 12 ? 
 	new_carriage->pc % IDX_MOD : new_carriage->pc;
 	new_carriage->pc = ft_calculate_pc(carriage, new_carriage->pc);
+	new_carriage->id = ++carriage->arena->carriage_index;
 	if (!(new_node = ft_lstnew(new_carriage, sizeof(*new_carriage))))
 		ft_exit("ERROR", NULL);
 	ft_lstadd(&carriage->arena->carriages, new_node);
 	carriage->arena->carriages_nbr++;
+	//carriage->arena->carriage_index++;
 	new_carriage->wait_cmd = 1;
 	ft_skip_args(carriage, fake, 1);
 	return (EXIT_SUCCESS);
@@ -509,6 +513,7 @@ unsigned short ft_reverse_bytes_short(unsigned short value)
 void ft_init_arena(t_arena *arena)
 {
 	arena->carriages_nbr = 0;
+	arena->carriage_index = 0;
 	arena->carriages = NULL;
 	arena->dump_nbr_cycles = NULL;
 	arena->players = NULL;
@@ -719,6 +724,7 @@ void ft_put_players_to_arena(t_arena *arena)
 		players = players->next;
 	}
 	arena->live_id = -ft_reverse_bytes(carriage->regs[1]);
+	carriage->arena->carriage_index = carriage->arena->carriages_nbr;
 }
 
 /*
