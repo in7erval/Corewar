@@ -51,6 +51,11 @@ typedef struct s_carriage
     int         death;
     void        *params[3];
     int         values[3];
+    int         reg_nbrs[3];
+    int         ind_val[3];
+    int         tmp1;
+    int         tmp2;
+    int         target_pc;
    /*  int         *cycles_to_die;
     int         *nbr_cycles;
     int         *carriages_nbr; */

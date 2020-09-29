@@ -6,7 +6,7 @@
 /*   By: majosue <majosue@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/09/08 20:32:21 by majosue           #+#    #+#             */
-/*   Updated: 2020/09/28 13:06:50 by majosue          ###   ########.fr       */
+/*   Updated: 2020/09/29 23:29:47 by majosue          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -119,6 +119,7 @@ int	ft_is_valid_regs(t_carriage *carriage, int args[3])
 			if (carriage->core[pc] <= 0 || carriage->core[pc] > REG_NUMBER)
 				return (0);
 			carriage->params[i] = &(carriage->regs[carriage->core[pc]]);
+			carriage->reg_nbrs[i] = carriage->core[pc];
 		}
 			pc = (pc + g_params[op_tab[carriage->op].short_dir][args[i]]) % MEM_SIZE;
 		i++;
@@ -215,6 +216,7 @@ void ft_load_params(t_carriage *carriage, int args[3], int mod, int arg_bytes)
 			ft_memmove_circle(&ind, &carriage->core[pc],
 			carriage, sizeof(short));
 			ind = ft_reverse_bytes_short(ind);
+			carriage->ind_val[i] = ind;
 			ind = mod ? ind % IDX_MOD : ind;
 			ind_pc = ft_calculate_pc(carriage, ind);
 			carriage->params[i] = &carriage->core[ind_pc];
@@ -281,7 +283,7 @@ int ft_live(t_carriage *carriage, int args[3])
 	}
 	carriage->arena->live_nbr++;
 	carriage->last_live_cycle = carriage->arena->nbr_cycles;
-	return (EXIT_FAILURE);
+	return (EXIT_SUCCESS);
 }
 
 int ft_ld_lld(t_carriage *carriage, int args[3])
@@ -317,7 +319,10 @@ int ft_st(t_carriage *carriage, int args[3])
 	ft_memmove_circle(carriage->params[1],
 	carriage->params[0], carriage, REG_SIZE);
 	ft_load_values(carriage, args);
-	ft_skip_args(carriage, args, 2);
+	if ((unsigned char*)carriage->params[1] - carriage->core >= 0 &&
+	(unsigned char*)carriage->params[1] - carriage->core < MEM_SIZE)
+	carriage->values[1] = carriage->ind_val[1];
+	ft_skip_args(carriage, args, 2); 
 	return (EXIT_SUCCESS);
 }
 
@@ -383,16 +388,17 @@ int ft_zjmp(t_carriage *carriage, int args[3])
 	int pc;
 
 	fake[0] = DIR_CODE;
-	if (carriage->carry == 0)
-	{
-			ft_skip_args(carriage, fake, 1);
-			return(EXIT_FAILURE);
-	}
 	ft_load_params(carriage, fake, 1, 0);
 	ft_load_values(carriage, fake);
 	pc = carriage->values[0];
 	pc = pc % IDX_MOD;
 	pc = ft_calculate_pc(carriage, pc);
+	if (carriage->carry == 0)
+	{
+			ft_skip_args(carriage, fake, 1);
+			return(EXIT_FAILURE);
+			//return(EXIT_SUCCESS);
+	}
 	carriage->pc = pc;
 	carriage->wait_cmd = 1;
 	return(EXIT_SUCCESS);
@@ -411,14 +417,15 @@ int ft_ldi_lldi(t_carriage *carriage, int args[3])
 	ft_load_params(carriage, args, 1, 1);
 	ft_load_values(carriage, args);
 	carriage->values[2] = carriage->values[0] + carriage->values[1];
+	carriage->tmp1 = carriage->values[2];
 	carriage->values[2] = op_tab[carriage->op].op_code == 10 ? carriage->values[2] % IDX_MOD : carriage->values[2];
+	carriage->tmp2 = carriage->values[2] + carriage->pc;
 	pc = ft_calculate_pc(carriage, carriage->values[2]);
+	carriage->target_pc = pc;
 	ft_memmove_circle(carriage->params[2], &carriage->core[pc],
 	carriage, REG_SIZE);
 	ft_load_values(carriage, args);
-	if (op_tab[carriage->op].op_code == 10)
-		carriage->carry = carriage->values[2] ? 1 : 0;
-	else
+	if (op_tab[carriage->op].op_code == 14)
 		carriage->carry = carriage->values[2] ? 0 : 1;
 	ft_skip_args(carriage, args, 2);
 	return (EXIT_SUCCESS);
@@ -437,8 +444,11 @@ int ft_sti(t_carriage *carriage, int args[3])
 	ft_load_params(carriage, args, 1, 1);
 	ft_load_values(carriage, args);
 	carriage->values[0] = carriage->values[1] + carriage->values[2];
+	carriage->tmp1 = carriage->values[0];
 	carriage->values[0] = carriage->values[0] % IDX_MOD;
+	carriage->tmp2 = carriage->values[0] + carriage->pc;
 	pc = ft_calculate_pc(carriage, carriage->values[0]);
+	carriage->target_pc = pc;
 	ft_memmove_circle(&carriage->core[pc], carriage->params[0], carriage, REG_SIZE);
 	ft_skip_args(carriage, args, 2);
 	return (EXIT_SUCCESS);
@@ -462,6 +472,7 @@ int ft_fork_lfork(t_carriage *carriage, int args[3])
 	new_carriage->pc = carriage->values[0];
 	new_carriage->pc = op_tab[carriage->op].op_code == 12 ? 
 	new_carriage->pc % IDX_MOD : new_carriage->pc;
+	carriage->target_pc = new_carriage->pc + carriage->pc;
 	new_carriage->pc = ft_calculate_pc(carriage, new_carriage->pc);
 	new_carriage->id = ++carriage->arena->carriage_index;
 	if (!(new_node = ft_lstnew(new_carriage, sizeof(*new_carriage))))
@@ -471,6 +482,7 @@ int ft_fork_lfork(t_carriage *carriage, int args[3])
 	//carriage->arena->carriage_index++;
 	carriage->arena->dbg_counter++;
 	new_carriage->wait_cmd = 1;
+
 	ft_skip_args(carriage, fake, 1);
 	return (EXIT_SUCCESS);
 }
@@ -786,6 +798,87 @@ int ft_check_arena(t_arena *arena)
 	return (0);
 }
 
+void ft_print_sti(t_carriage *carriage, int args[3])
+{
+	(void)args;
+	ft_printf("r%d %d %d\n", carriage->reg_nbrs[0], carriage->values[1], carriage->values[2]);
+	ft_printf("       | -> store to %d + %d = %d (with pc and mod %d)\n", carriage->values[1], carriage->values[2], carriage->tmp1, carriage->tmp2);
+}
+
+void ft_print_ldi(t_carriage *carriage, int args[3])
+{
+	(void)args;
+	ft_printf("%d %d r%d\n", carriage->values[0], carriage->values[1], carriage->reg_nbrs[2]);
+	ft_printf("       | -> load from %d + %d = %d (with pc and mod %d)\n", carriage->values[0], carriage->values[1], carriage->tmp1, carriage->tmp2);
+}
+
+void ft_print_and_or_xor(t_carriage *carriage, int args[3])
+{
+	(void)args;
+		ft_printf("%d %d r%d\n", carriage->values[0], carriage->values[1], carriage->reg_nbrs[2]);
+}
+
+void ft_print_op(t_carriage *carriage, int result, int args[3])
+{
+int i;
+char r[3];
+
+ft_bzero(r, 3);
+r[1] = 'r';
+i = -1;
+if (result && op_tab[carriage->op].op_code != 9)
+	return;
+else
+	{
+		ft_printf("P%5d | %s ", carriage->id, op_tab[carriage->op].name);
+		if (op_tab[carriage->op].op_code == 1)
+			{
+				ft_printf("%d\n", carriage->values[0]);
+				return;
+			}
+		if (op_tab[carriage->op].op_code == 12 || op_tab[carriage->op].op_code == 15)
+			{
+				ft_printf("%d (%d)\n", carriage->values[0], carriage->target_pc);
+				return;
+			}
+		if (op_tab[carriage->op].op_code == 11)
+			{
+				ft_print_sti(carriage, args);
+				return;
+			}
+		if (op_tab[carriage->op].op_code == 10)
+			{
+				ft_print_ldi(carriage, args);
+				return;
+			}
+		if (op_tab[carriage->op].op_code == 6 ||
+		op_tab[carriage->op].op_code == 7 ||
+		op_tab[carriage->op].op_code == 8)
+			{
+				ft_print_and_or_xor(carriage, args);
+				return;
+			}
+		if (result)
+		{
+			ft_printf("%d FAILED\n", carriage->values[0]);
+			return;
+		}
+		else if (op_tab[carriage->op].op_code == 9)
+		{
+			ft_printf("%d OK\n", carriage->values[0]);
+			return;
+		}
+		while (++i < op_tab[carriage->op].max_params)
+		{
+			if (args[i] == 1) //не подходит для фейковых безаргументных
+				ft_printf("%c%d ", r[args[i]],  carriage->reg_nbrs[i]);
+			else
+				ft_printf("%d ", carriage->values[i]);	
+		}
+		ft_printf("\n");
+	}
+}
+
 void	ft_check_op(t_carriage *carriage)
 {
 	if (carriage->op > 0 && carriage->op < 17)
@@ -801,12 +894,14 @@ void ft_run_op(t_carriage *carriage)
 {
 	t_arg_byte	arg;
 	int args[3];
+	int result;
 	
 	arg.byte = carriage->core[(carriage->pc + 1) % MEM_SIZE];
 	args[0] = arg.value.at8;
 	args[1] = arg.value.at6;
 	args[2] = arg.value.at4;
-	op_tab[carriage->op].f(carriage, args);
+	result = op_tab[carriage->op].f(carriage, args);
+	ft_print_op(carriage, result, args);
 }
 
 void ft_run_carriages(t_list *carriages)
@@ -852,7 +947,8 @@ void ft_start_game(t_arena *arena)
 			break;
 		}
 		(arena->nbr_cycles)++;
-	 	ft_lstiter(arena->carriages, ft_run_carriages);
+	 	//ft_printf("It is now cycle %d\n", arena->nbr_cycles);
+		 ft_lstiter(arena->carriages, ft_run_carriages);
 		if (ft_check_arena(arena))
 			{
 				if (ft_get_player(arena, arena->live_id))
