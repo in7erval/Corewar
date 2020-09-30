@@ -1,6 +1,14 @@
-//
-// Created by Haako Trent on 9/7/20.
-//
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   corewar.h                                          :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: majosue <majosue@student.42.fr>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2020/09/30 05:08:50 by majosue           #+#    #+#             */
+/*   Updated: 2020/09/30 05:13:15 by majosue          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
 #ifndef COREWAR_COREWAR_H
 #define COREWAR_COREWAR_H
@@ -84,31 +92,22 @@ typedef struct	s_op
     t_op_exec f;
 }               t_op;
 
-
 unsigned int	ft_reverse_bytes(unsigned int value);
 unsigned short	ft_reverse_bytes_short(unsigned short value);
 t_player		*ft_get_player(t_arena *arena, int id);
-void ft_exit(char *str, char *str2);
-void ft_load_params(t_carriage *carriage, int args[3], int mod, int arg_bytes);
-void ft_load_values(t_carriage *carriage, int args[3]);
-int	ft_live_arg_check(t_carriage *carriage, int args[3]);
-int	ft_ld_arg_check(t_carriage *carriage, int args[3]);
-int	ft_st_arg_check(t_carriage *carriage, int args[3]);
-int	ft_add_arg_check(t_carriage *carriage, int args[3]);
-int	ft_and_arg_check(t_carriage *carriage, int args[3]);
-int	ft_ldi_arg_check(t_carriage *carriage, int args[3]);
-int	ft_sti_arg_check(t_carriage *carriage, int args[3]);
-int	ft_sti_aff_check(t_carriage *carriage, int args[3]);
-int ft_live(t_carriage *carriage, int args[3]);
-int ft_ld_lld(t_carriage *carriage, int args[3]);
-int ft_st(t_carriage *carriage, int args[3]);
-int ft_add_sub (t_carriage *carriage, int args[3]);
-int ft_and_or_xor (t_carriage *carriage, int args[3]);
-int ft_zjmp(t_carriage *carriage, int args[3]);
-int ft_ldi_lldi(t_carriage *carriage, int args[3]);
-int ft_sti(t_carriage *carriage, int args[3]);
-int ft_fork_lfork(t_carriage *carriage, int args[3]);
-int ft_aff(t_carriage *carriage, int args[3]);
-void ft_print_memory(void *mem, size_t size);
+void			ft_exit(char *str, char *str2);
+void			ft_load_params(t_carriage *carriage, int args[3], int mod, int arg_bytes);
+void			ft_load_values(t_carriage *carriage, int args[3]);
+int				ft_live(t_carriage *carriage, int args[3]);
+int				ft_ld_lld(t_carriage *carriage, int args[3]);
+int				ft_st(t_carriage *carriage, int args[3]);
+int				ft_add_sub (t_carriage *carriage, int args[3]);
+int				ft_and_or_xor (t_carriage *carriage, int args[3]);
+int				ft_zjmp(t_carriage *carriage, int args[3]);
+int				ft_ldi_lldi(t_carriage *carriage, int args[3]);
+int				ft_sti(t_carriage *carriage, int args[3]);
+int				ft_fork_lfork(t_carriage *carriage, int args[3]);
+int				ft_aff(t_carriage *carriage, int args[3]);
+void			ft_print_memory(void *mem, size_t size);
 
-#endif //COREWAR_COREWAR_H
+#endif

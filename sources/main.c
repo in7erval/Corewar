@@ -6,7 +6,7 @@
 /*   By: majosue <majosue@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/09/08 20:32:21 by majosue           #+#    #+#             */
-/*   Updated: 2020/09/30 07:32:11 by majosue          ###   ########.fr       */
+/*   Updated: 2020/09/30 05:14:16 by majosue          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -163,56 +163,6 @@ int ft_calculate_pc(t_carriage *carriage, int addon)
 	return (pc);
 }
 
-int	ft_ld_arg_check(t_carriage *carriage, int args[3])
-{
-	if (!((args[0] == DIR_CODE || args[0] == IND_CODE) &&
-	args[1] == REG_CODE && ft_is_valid_regs(carriage, args)))
-		return (EXIT_FAILURE);
-	return (EXIT_SUCCESS);
-}
-
-int	ft_st_arg_check(t_carriage *carriage, int args[3])
-{
-	if (args[0] == REG_CODE  && (args[1] == REG_CODE ||
-	args[1] == IND_CODE) && ft_is_valid_regs(carriage, args))
-		return (0);
-	return (1);
-}
-
-int	ft_add_arg_check(t_carriage *carriage, int args[3])
-{
-if (args[0] == REG_CODE && args[1] == REG_CODE &&
-args[2] == REG_CODE && ft_is_valid_regs(carriage, args))
-		return (0);
-	return (1);
-}
-
-int	ft_and_arg_check(t_carriage *carriage, int args[3])
-{
-if (args[0] != 0 && args[1] != 0 && args[2] == REG_CODE &&
-ft_is_valid_regs(carriage, args))
-		return (0);
-	return (1);
-}
-
-int	ft_ldi_arg_check(t_carriage *carriage, int args[3])
-{
-if (args[0] != 0 && (args[1] == DIR_CODE ||
-args[1] == REG_CODE) && args[2] == REG_CODE &&
-ft_is_valid_regs(carriage, args))
-		return (0);
-	return (1);
-}
-
-int	ft_sti_arg_check(t_carriage *carriage, int args[3])
-{
-if (args[0] == REG_CODE && args[1] != 0 &&
-(args[2] == DIR_CODE || args[2] == REG_CODE)
-&& ft_is_valid_regs(carriage, args))
-		return (0);
-	return (1);
-}
-
 /*
 **	Store adress of args to carriage->params
 **	store IND values to carriage->ind_val
@@ -311,7 +261,8 @@ int ft_ld_lld(t_carriage *carriage, int args[3])
 	int mod;
 	int result;
 
-	if (ft_ld_arg_check(carriage, args))
+	if (!((args[0] == DIR_CODE || args[0] == IND_CODE) &&
+	args[1] == REG_CODE && ft_is_valid_regs(carriage, args)))
 	{
 		ft_skip_args(carriage, args, 2);
 		return (EXIT_FAILURE);
@@ -330,7 +281,8 @@ int ft_ld_lld(t_carriage *carriage, int args[3])
 
 int ft_st(t_carriage *carriage, int args[3])
 {
-	if (ft_st_arg_check(carriage, args))
+	if (!(args[0] == REG_CODE  && (args[1] == REG_CODE ||
+	args[1] == IND_CODE) && ft_is_valid_regs(carriage, args)))
 	{
 		ft_skip_args(carriage, args, 2);
 		return (EXIT_FAILURE);
@@ -350,7 +302,8 @@ int ft_add_sub (t_carriage *carriage, int args[3])
 {
 	int result;
 
-	if (ft_add_arg_check(carriage, args))
+	if (!(args[0] == REG_CODE && args[1] == REG_CODE &&
+args[2] == REG_CODE && ft_is_valid_regs(carriage, args)))
 	{
 		ft_skip_args(carriage, args, 2);
 		return (EXIT_FAILURE);
@@ -371,7 +324,8 @@ int ft_and_or_xor(t_carriage *carriage, int args[3])
 {
 	int result;
 
-	if (ft_and_arg_check(carriage, args))
+	if (!(args[0] != 0 && args[1] != 0 && args[2] == REG_CODE &&
+ft_is_valid_regs(carriage, args)))
 	{
 		ft_skip_args(carriage, args, 2);
 		return (EXIT_FAILURE);
@@ -417,7 +371,9 @@ int ft_ldi_lldi(t_carriage *carriage, int args[3])
 {
 	int pc;
 
-	if (ft_ldi_arg_check(carriage, args))
+	if (!(args[0] != 0 && (args[1] == DIR_CODE ||
+args[1] == REG_CODE) && args[2] == REG_CODE &&
+ft_is_valid_regs(carriage, args)))
 	{
 		ft_skip_args(carriage, args, 2);
 		return (EXIT_FAILURE);
@@ -443,7 +399,9 @@ int ft_sti(t_carriage *carriage, int args[3])
 {
 	int pc;
 
-	if (ft_sti_arg_check(carriage, args))
+	if (!(args[0] == REG_CODE && args[1] != 0 &&
+(args[2] == DIR_CODE || args[2] == REG_CODE)
+&& ft_is_valid_regs(carriage, args)))
 	{
 		ft_skip_args(carriage, args, 2);
 		return (EXIT_FAILURE);
@@ -545,7 +503,6 @@ void ft_init_arena(t_arena *arena)
 	arena->live_nbr = 0;
 	arena->nbr_cycles = 0;
 	arena->checks_nbr = 0;
-
 	ft_bzero(arena->core, MEM_SIZE);
 }
 
