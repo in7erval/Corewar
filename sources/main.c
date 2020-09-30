@@ -6,12 +6,32 @@
 /*   By: majosue <majosue@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/09/08 20:32:21 by majosue           #+#    #+#             */
-/*   Updated: 2020/09/29 23:29:47 by majosue          ###   ########.fr       */
+/*   Updated: 2020/09/30 07:32:11 by majosue          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "corewar.h"
-#include "op.c" // forbiden by norm?
+
+t_op    g_op_tab[17] =
+{
+	{0,				0, {0},														0,		0, 			0, 									0, 		0, 0},
+	{"live",		1, {T_DIR},													1,		10, 		"alive", 							0, 		0, ft_live},
+	{"ld",			2, {T_DIR | T_IND, T_REG},									2,		5, 			"load", 							1, 		0, ft_ld_lld},
+	{"st",			2, {T_REG, T_IND | T_REG},									3,		5, 			"store", 							1, 		0, ft_st},
+	{"add",			3, {T_REG, T_REG, T_REG},									4,		10, 		"addition", 						1, 		0, ft_add_sub},
+	{"sub",			3, {T_REG, T_REG, T_REG},									5,		10, 		"soustraction",						1, 		0, ft_add_sub},
+	{"and", 		3, {T_REG | T_DIR | T_IND, T_REG | T_IND | T_DIR, T_REG},	6,		6, 			"et (and r1, r2, r3 r1&r2 -> r3",	1, 		0, ft_and_or_xor},
+	{"or",			3, {T_REG | T_IND | T_DIR, T_REG | T_IND | T_DIR, T_REG},	7,		6, 			"ou  (or r1, r2, r3 r1|r2 -> r3", 	1, 		0, ft_and_or_xor},
+	{"xor",			3, {T_REG | T_IND | T_DIR, T_REG | T_IND | T_DIR, T_REG},	8,		6, 			"ou (xor r1, r2, r3 r1^r2 -> r3", 	1, 		0, ft_and_or_xor},
+	{"zjmp",		1, {T_DIR},													9,		20, 		"jump if zero", 					0, 		1, ft_zjmp},
+	{"ldi",			3, {T_REG | T_DIR | T_IND, T_DIR | T_REG, T_REG},			10,		25, 		"load index", 						1, 		1, ft_ldi_lldi},
+	{"sti",			3, {T_REG, T_REG | T_DIR | T_IND, T_DIR | T_REG},			11,		25, 		"store index", 						1, 		1, ft_sti},
+	{"fork",		1, {T_DIR},													12,		800, 		"fork",	 							0, 		1, ft_fork_lfork},
+	{"lld",			2, {T_DIR | T_IND, T_REG},									13,		10,			"long load", 						1, 		0, ft_ld_lld},
+	{"lldi",		3, {T_REG | T_DIR | T_IND, T_DIR | T_REG, T_REG},			14,		50,			"long load index", 					1, 		1, ft_ldi_lldi},
+	{"lfork",		1, {T_DIR},													15,		1000,		"long fork", 						0, 		1, ft_fork_lfork},
+	{"aff",			1, {T_REG},													16,		2, 			"aff", 								1, 		0, ft_aff}
+};
 
 /*
 **	g_params for storing sizes of arg types
@@ -91,9 +111,9 @@ void ft_skip_args(t_carriage *carriage, int args[3], int addon)
 
 	i = 0;
 	skip = 0;
-	while (i < op_tab[carriage->op].max_params)
+	while (i < g_op_tab[carriage->op].max_params)
 	{
-		skip += g_params[op_tab[carriage->op].short_dir][args[i]];
+		skip += g_params[g_op_tab[carriage->op].short_dir][args[i]];
 		i++;
 	}
 	carriage->pc = (carriage->pc + skip + addon) % MEM_SIZE;
@@ -101,8 +121,9 @@ void ft_skip_args(t_carriage *carriage, int args[3], int addon)
 }
 
 /*
-**	Check valid registr number 
-**	and store adress of regitr to carriage->params
+**	Check valid registry number 
+**	store adress of registry to carriage->params
+**	store number to carriage->reg_nbrs
 */
 
 int	ft_is_valid_regs(t_carriage *carriage, int args[3])
@@ -112,7 +133,7 @@ int	ft_is_valid_regs(t_carriage *carriage, int args[3])
 
 	i = 0;
 	pc = (carriage->pc + 2) % MEM_SIZE;
-	while (i < op_tab[carriage->op].max_params)
+	while (i < g_op_tab[carriage->op].max_params)
 	{
 		if (args[i] == REG_CODE)
 		{
@@ -121,7 +142,8 @@ int	ft_is_valid_regs(t_carriage *carriage, int args[3])
 			carriage->params[i] = &(carriage->regs[carriage->core[pc]]);
 			carriage->reg_nbrs[i] = carriage->core[pc];
 		}
-			pc = (pc + g_params[op_tab[carriage->op].short_dir][args[i]]) % MEM_SIZE;
+			pc = (pc + g_params[g_op_tab[carriage->op].short_dir][args[i]])
+			% MEM_SIZE;
 		i++;
 	}
 	return (1);
@@ -191,12 +213,10 @@ if (args[0] == REG_CODE && args[1] != 0 &&
 	return (1);
 }
 
-int	ft_sti_aff_check(t_carriage *carriage, int args[3])
-{
-if (args[0] == REG_CODE && ft_is_valid_regs(carriage, args))
-		return (0);
-	return (1);
-}
+/*
+**	Store adress of args to carriage->params
+**	store IND values to carriage->ind_val
+*/
 
 void ft_load_params(t_carriage *carriage, int args[3], int mod, int arg_bytes)
 {
@@ -207,7 +227,7 @@ void ft_load_params(t_carriage *carriage, int args[3], int mod, int arg_bytes)
 	
 	pc = (carriage->pc + 1 + arg_bytes) % MEM_SIZE;
 	i = -1;
-	while (++i < op_tab[carriage->op].max_params)
+	while (++i < g_op_tab[carriage->op].max_params)
 	{
 		if (args[i] == DIR_CODE)
 			carriage->params[i] = &carriage->core[pc];
@@ -221,14 +241,17 @@ void ft_load_params(t_carriage *carriage, int args[3], int mod, int arg_bytes)
 			ind_pc = ft_calculate_pc(carriage, ind);
 			carriage->params[i] = &carriage->core[ind_pc];
 		}
-		pc = (pc + g_params[op_tab[carriage->op].short_dir][args[i]]) % MEM_SIZE;
+		pc = (pc + g_params[g_op_tab[carriage->op].short_dir][args[i]])
+		% MEM_SIZE;
 	}
 }
 
 /*
-**	Load values from params
-**	Use DIR_SIZE instead others (we alrady get adreses in load_params)
-**	op 0x0d  t_dir = 2 in subject example exec corwar 
+**	Store values at carriage->params in carriage->values
+**	use DIR_SIZE instead others (we alrady get adreses in load_params)
+**	use "g_op_tab[carriage->op].op_code == 0x0d ? 2 :size;"
+**	for repeat behavour of original corewar
+**	op 0x0d lld read 2 bytes on IND adress
 */
 
 void ft_load_values(t_carriage *carriage, int args[3])
@@ -238,18 +261,17 @@ void ft_load_values(t_carriage *carriage, int args[3])
 	short buffer;
 	
 	i = 0;
-	while (i < op_tab[carriage->op].max_params)
+	while (i < g_op_tab[carriage->op].max_params)
 	{
 		size = args[i] == IND_CODE || args[i] == REG_CODE ? DIR_SIZE :
-		g_params[op_tab[carriage->op].short_dir][args[i]];
+		g_params[g_op_tab[carriage->op].short_dir][args[i]];
 		size = args[i] == IND_CODE &&
-		op_tab[carriage->op].op_code == 0x0d ? 2 :size;
+		g_op_tab[carriage->op].op_code == 0x0d ? 2 :size;
 	if (size < DIR_SIZE)
 	{
 		ft_memmove_circle(&buffer, carriage->params[i], carriage, size);
 		buffer = ft_reverse_bytes_short(buffer);
 		carriage->values[i] = buffer;
-		//carriage->values[i] = ft_reverse_bytes(carriage->values[i]);
 	}
 	else 
 		{
@@ -272,14 +294,12 @@ int ft_live(t_carriage *carriage, int args[3])
 	ft_load_params(carriage, fake, 1, 0);
 	ft_load_values(carriage, fake);
 	id = -carriage->values[0];
-	//id = -id;
 	ft_skip_args(carriage, fake, 1);
 	if ((player = ft_get_player(carriage->arena, id)))
 	{
 		/* ft_printf("A process shows that player %d (%s) is alive\n",
 		player->nbr, player->header.prog_name); */
 		carriage->arena->live_id = id;
-		//return (EXIT_SUCCESS);
 	}
 	carriage->arena->live_nbr++;
 	carriage->last_live_cycle = carriage->arena->nbr_cycles;
@@ -296,7 +316,7 @@ int ft_ld_lld(t_carriage *carriage, int args[3])
 		ft_skip_args(carriage, args, 2);
 		return (EXIT_FAILURE);
 	}
-	mod = op_tab[carriage->op].op_code == 2 ? 1 : 0;
+	mod = g_op_tab[carriage->op].op_code == 2 ? 1 : 0;
 	ft_load_params(carriage, args, mod, 1);
 	ft_load_values(carriage, args);
 	result = ft_reverse_bytes(carriage->values[0]);
@@ -328,9 +348,6 @@ int ft_st(t_carriage *carriage, int args[3])
 
 int ft_add_sub (t_carriage *carriage, int args[3])
 {
-	/* int value1;
-	int value2;
-	int value3; */
 	int result;
 
 	if (ft_add_arg_check(carriage, args))
@@ -338,10 +355,8 @@ int ft_add_sub (t_carriage *carriage, int args[3])
 		ft_skip_args(carriage, args, 2);
 		return (EXIT_FAILURE);
 	}
-	/* ft_memmove(&value1, carriage->params[0], REG_SIZE);
-	ft_memmove(&value2, carriage->params[1], REG_SIZE); */
 	ft_load_values(carriage, args);
-	if (op_tab[carriage->op].op_code == 4)
+	if (g_op_tab[carriage->op].op_code == 4)
 		carriage->values[2] = carriage->values[0] + carriage->values[1];
 	else 
 		carriage->values[2] = carriage->values[0] - carriage->values[1];
@@ -354,9 +369,6 @@ int ft_add_sub (t_carriage *carriage, int args[3])
 
 int ft_and_or_xor(t_carriage *carriage, int args[3])
 {
-	/* unsigned int value1;
-	unsigned int value2;
-	unsigned int value3; */
 	int result;
 
 	if (ft_and_arg_check(carriage, args))
@@ -366,11 +378,9 @@ int ft_and_or_xor(t_carriage *carriage, int args[3])
 	}
 	ft_load_params(carriage, args, 1, 1);
 	ft_load_values(carriage, args);
-	/* ft_memmove_circle(&value1, carriage->params[0], carriage, REG_SIZE);
-	ft_memmove_circle(&value2, carriage->params[1], carriage, REG_SIZE); */
-	if (op_tab[carriage->op].op_code == 6)
+	if (g_op_tab[carriage->op].op_code == 6)
 		carriage->values[2] = carriage->values[0] & carriage->values[1];
-	else if (op_tab[carriage->op].op_code == 7)
+	else if (g_op_tab[carriage->op].op_code == 7)
 		carriage->values[2] = carriage->values[0] | carriage->values[1];
 	else 
 		carriage->values[2] = carriage->values[0] ^ carriage->values[1];
@@ -397,7 +407,6 @@ int ft_zjmp(t_carriage *carriage, int args[3])
 	{
 			ft_skip_args(carriage, fake, 1);
 			return(EXIT_FAILURE);
-			//return(EXIT_SUCCESS);
 	}
 	carriage->pc = pc;
 	carriage->wait_cmd = 1;
@@ -406,7 +415,6 @@ int ft_zjmp(t_carriage *carriage, int args[3])
 
 int ft_ldi_lldi(t_carriage *carriage, int args[3])
 {
-	//int result;
 	int pc;
 
 	if (ft_ldi_arg_check(carriage, args))
@@ -417,15 +425,15 @@ int ft_ldi_lldi(t_carriage *carriage, int args[3])
 	ft_load_params(carriage, args, 1, 1);
 	ft_load_values(carriage, args);
 	carriage->values[2] = carriage->values[0] + carriage->values[1];
-	carriage->tmp1 = carriage->values[2];
-	carriage->values[2] = op_tab[carriage->op].op_code == 10 ? carriage->values[2] % IDX_MOD : carriage->values[2];
-	carriage->tmp2 = carriage->values[2] + carriage->pc;
+	carriage->binary_op_result = carriage->values[2];
+	carriage->values[2] = g_op_tab[carriage->op].op_code == 10 ?
+	carriage->values[2] % IDX_MOD : carriage->values[2];
+	carriage->target_pc = carriage->values[2] + carriage->pc;
 	pc = ft_calculate_pc(carriage, carriage->values[2]);
-	carriage->target_pc = pc;
 	ft_memmove_circle(carriage->params[2], &carriage->core[pc],
 	carriage, REG_SIZE);
 	ft_load_values(carriage, args);
-	if (op_tab[carriage->op].op_code == 14)
+	if (g_op_tab[carriage->op].op_code == 14)
 		carriage->carry = carriage->values[2] ? 0 : 1;
 	ft_skip_args(carriage, args, 2);
 	return (EXIT_SUCCESS);
@@ -433,7 +441,6 @@ int ft_ldi_lldi(t_carriage *carriage, int args[3])
 
 int ft_sti(t_carriage *carriage, int args[3])
 {
-//	int result;
 	int pc;
 
 	if (ft_sti_arg_check(carriage, args))
@@ -444,11 +451,10 @@ int ft_sti(t_carriage *carriage, int args[3])
 	ft_load_params(carriage, args, 1, 1);
 	ft_load_values(carriage, args);
 	carriage->values[0] = carriage->values[1] + carriage->values[2];
-	carriage->tmp1 = carriage->values[0];
+	carriage->binary_op_result = carriage->values[0];
 	carriage->values[0] = carriage->values[0] % IDX_MOD;
-	carriage->tmp2 = carriage->values[0] + carriage->pc;
+	carriage->target_pc = carriage->values[0] + carriage->pc;
 	pc = ft_calculate_pc(carriage, carriage->values[0]);
-	carriage->target_pc = pc;
 	ft_memmove_circle(&carriage->core[pc], carriage->params[0], carriage, REG_SIZE);
 	ft_skip_args(carriage, args, 2);
 	return (EXIT_SUCCESS);
@@ -456,21 +462,19 @@ int ft_sti(t_carriage *carriage, int args[3])
 
 int ft_fork_lfork(t_carriage *carriage, int args[3])
 {
-	int fake[3];
 	int mod;
 	t_carriage 	*new_carriage;
 	t_list		*new_node;
 
-	(void)args;
-	mod = op_tab[carriage->op].op_code == 12 ? 1 : 0;
+	mod = g_op_tab[carriage->op].op_code == 12 ? 1 : 0;
 	if (!(new_carriage = (t_carriage*)ft_memalloc(sizeof(t_carriage))))
 		ft_exit("ERROR", NULL);
 	ft_memmove(new_carriage, carriage, sizeof(t_carriage));
-	fake[0] = DIR_CODE;
-	ft_load_params(carriage, fake, mod, 0);
-	ft_load_values(carriage, fake);
+	args[0] = DIR_CODE;
+	ft_load_params(carriage, args, mod, 0);
+	ft_load_values(carriage, args);
 	new_carriage->pc = carriage->values[0];
-	new_carriage->pc = op_tab[carriage->op].op_code == 12 ? 
+	new_carriage->pc = g_op_tab[carriage->op].op_code == 12 ? 
 	new_carriage->pc % IDX_MOD : new_carriage->pc;
 	carriage->target_pc = new_carriage->pc + carriage->pc;
 	new_carriage->pc = ft_calculate_pc(carriage, new_carriage->pc);
@@ -479,11 +483,8 @@ int ft_fork_lfork(t_carriage *carriage, int args[3])
 		ft_exit("ERROR", NULL);
 	ft_lstadd(&carriage->arena->carriages, new_node);
 	carriage->arena->carriages_nbr++;
-	//carriage->arena->carriage_index++;
-	carriage->arena->dbg_counter++;
 	new_carriage->wait_cmd = 1;
-
-	ft_skip_args(carriage, fake, 1);
+	ft_skip_args(carriage, args, 1);
 	return (EXIT_SUCCESS);
 }
 
@@ -544,7 +545,6 @@ void ft_init_arena(t_arena *arena)
 	arena->live_nbr = 0;
 	arena->nbr_cycles = 0;
 	arena->checks_nbr = 0;
-	arena->dbg_counter = 0;
 
 	ft_bzero(arena->core, MEM_SIZE);
 }
@@ -590,7 +590,6 @@ int ft_find_next_avialable_number(t_list *players, int delta)
 int ft_read_player_number(char **str, t_arena *arena)
 {
 	long number;
-//	t_list *carriages;
 	t_list *players;
 	
 	number = 1;
@@ -802,14 +801,14 @@ void ft_print_sti(t_carriage *carriage, int args[3])
 {
 	(void)args;
 	ft_printf("r%d %d %d\n", carriage->reg_nbrs[0], carriage->values[1], carriage->values[2]);
-	ft_printf("       | -> store to %d + %d = %d (with pc and mod %d)\n", carriage->values[1], carriage->values[2], carriage->tmp1, carriage->tmp2);
+	ft_printf("       | -> store to %d + %d = %d (with pc and mod %d)\n", carriage->values[1], carriage->values[2], carriage->binary_op_result, carriage->target_pc);
 }
 
 void ft_print_ldi(t_carriage *carriage, int args[3])
 {
 	(void)args;
 	ft_printf("%d %d r%d\n", carriage->values[0], carriage->values[1], carriage->reg_nbrs[2]);
-	ft_printf("       | -> load from %d + %d = %d (with pc and mod %d)\n", carriage->values[0], carriage->values[1], carriage->tmp1, carriage->tmp2);
+	ft_printf("       | -> load from %d + %d = %d (with pc and mod %d)\n", carriage->values[0], carriage->values[1], carriage->binary_op_result, carriage->target_pc);
 }
 
 void ft_print_and_or_xor(t_carriage *carriage, int args[3])
@@ -826,34 +825,34 @@ char r[3];
 ft_bzero(r, 3);
 r[1] = 'r';
 i = -1;
-if (result && op_tab[carriage->op].op_code != 9)
+if (result && g_op_tab[carriage->op].op_code != 9)
 	return;
 else
 	{
-		ft_printf("P%5d | %s ", carriage->id, op_tab[carriage->op].name);
-		if (op_tab[carriage->op].op_code == 1)
+		ft_printf("P%5d | %s ", carriage->id, g_op_tab[carriage->op].name);
+		if (g_op_tab[carriage->op].op_code == 1)
 			{
 				ft_printf("%d\n", carriage->values[0]);
 				return;
 			}
-		if (op_tab[carriage->op].op_code == 12 || op_tab[carriage->op].op_code == 15)
+		if (g_op_tab[carriage->op].op_code == 12 || g_op_tab[carriage->op].op_code == 15)
 			{
 				ft_printf("%d (%d)\n", carriage->values[0], carriage->target_pc);
 				return;
 			}
-		if (op_tab[carriage->op].op_code == 11)
+		if (g_op_tab[carriage->op].op_code == 11)
 			{
 				ft_print_sti(carriage, args);
 				return;
 			}
-		if (op_tab[carriage->op].op_code == 10)
+		if (g_op_tab[carriage->op].op_code == 10)
 			{
 				ft_print_ldi(carriage, args);
 				return;
 			}
-		if (op_tab[carriage->op].op_code == 6 ||
-		op_tab[carriage->op].op_code == 7 ||
-		op_tab[carriage->op].op_code == 8)
+		if (g_op_tab[carriage->op].op_code == 6 ||
+		g_op_tab[carriage->op].op_code == 7 ||
+		g_op_tab[carriage->op].op_code == 8)
 			{
 				ft_print_and_or_xor(carriage, args);
 				return;
@@ -863,12 +862,12 @@ else
 			ft_printf("%d FAILED\n", carriage->values[0]);
 			return;
 		}
-		else if (op_tab[carriage->op].op_code == 9)
+		else if (g_op_tab[carriage->op].op_code == 9)
 		{
 			ft_printf("%d OK\n", carriage->values[0]);
 			return;
 		}
-		while (++i < op_tab[carriage->op].max_params)
+		while (++i < g_op_tab[carriage->op].max_params)
 		{
 			if (args[i] == 1) //не подходит для фейковых безаргументных
 				ft_printf("%c%d ", r[args[i]],  carriage->reg_nbrs[i]);
@@ -883,7 +882,7 @@ void	ft_check_op(t_carriage *carriage)
 {
 	if (carriage->op > 0 && carriage->op < 17)
 	{
-		carriage->cycles_to_exec = op_tab[carriage->op].cycles_to_exec - 2;
+		carriage->cycles_to_exec = g_op_tab[carriage->op].cycles_to_exec - 2;
 		carriage->wait_cmd = 0;
 	}
 	else
@@ -900,7 +899,7 @@ void ft_run_op(t_carriage *carriage)
 	args[0] = arg.value.at8;
 	args[1] = arg.value.at6;
 	args[2] = arg.value.at4;
-	result = op_tab[carriage->op].f(carriage, args);
+	result = g_op_tab[carriage->op].f(carriage, args);
 	ft_print_op(carriage, result, args);
 }
 
