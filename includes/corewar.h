@@ -6,7 +6,7 @@
 /*   By: majosue <majosue@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/09/30 05:08:50 by majosue           #+#    #+#             */
-/*   Updated: 2020/09/30 05:13:15 by majosue          ###   ########.fr       */
+/*   Updated: 2020/10/01 02:46:18 by majosue          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,6 +40,7 @@ typedef struct	s_arena
     int				live_nbr;
     int				live_id;
     int				checks_nbr;
+    unsigned char   verbose;
 }               t_arena;
 
 typedef struct	s_carriage

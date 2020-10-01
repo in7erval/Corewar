@@ -6,7 +6,7 @@
 /*   By: majosue <majosue@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/09/08 20:32:21 by majosue           #+#    #+#             */
-/*   Updated: 2020/09/30 05:14:16 by majosue          ###   ########.fr       */
+/*   Updated: 2020/10/01 04:25:39 by majosue          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -235,20 +235,19 @@ void ft_load_values(t_carriage *carriage, int args[3])
 
 int ft_live(t_carriage *carriage, int args[3])
 {
-	(void)args;
 	t_player *player;
-	int fake[3];
 	int id;
 	
-	fake[0] = DIR_CODE;
-	ft_load_params(carriage, fake, 1, 0);
-	ft_load_values(carriage, fake);
+	args[0] = DIR_CODE;
+	ft_load_params(carriage, args, 1, 0);
+	ft_load_values(carriage, args);
 	id = -carriage->values[0];
-	ft_skip_args(carriage, fake, 1);
+	ft_skip_args(carriage, args, 1);
 	if ((player = ft_get_player(carriage->arena, id)))
 	{
-		/* ft_printf("A process shows that player %d (%s) is alive\n",
-		player->nbr, player->header.prog_name); */
+		if (carriage->arena->verbose & 1)
+			ft_printf("A process shows that player %d (%s) is alive\n",
+		id, player->header.prog_name);
 		carriage->arena->live_id = id;
 	}
 	carriage->arena->live_nbr++;
@@ -347,19 +346,17 @@ ft_is_valid_regs(carriage, args)))
 
 int ft_zjmp(t_carriage *carriage, int args[3])
 {
-	(void)args;
-	int fake[3];
 	int pc;
 
-	fake[0] = DIR_CODE;
-	ft_load_params(carriage, fake, 1, 0);
-	ft_load_values(carriage, fake);
+	args[0] = DIR_CODE;
+	ft_load_params(carriage, args, 1, 0);
+	ft_load_values(carriage, args);
 	pc = carriage->values[0];
 	pc = pc % IDX_MOD;
 	pc = ft_calculate_pc(carriage, pc);
 	if (carriage->carry == 0)
 	{
-			ft_skip_args(carriage, fake, 1);
+			ft_skip_args(carriage, args, 1);
 			return(EXIT_FAILURE);
 	}
 	carriage->pc = pc;
@@ -388,9 +385,8 @@ ft_is_valid_regs(carriage, args)))
 	pc = ft_calculate_pc(carriage, carriage->values[2]);
 	ft_memmove_circle(carriage->params[2], &carriage->core[pc],
 	carriage, REG_SIZE);
-	ft_load_values(carriage, args);
 	if (g_op_tab[carriage->op].op_code == 14)
-		carriage->carry = carriage->values[2] ? 0 : 1;
+		carriage->carry = *(int *)carriage->params[2] ? 0 : 1;
 	ft_skip_args(carriage, args, 2);
 	return (EXIT_SUCCESS);
 }
@@ -503,6 +499,7 @@ void ft_init_arena(t_arena *arena)
 	arena->live_nbr = 0;
 	arena->nbr_cycles = 0;
 	arena->checks_nbr = 0;
+	arena->verbose = 1;
 	ft_bzero(arena->core, MEM_SIZE);
 }
 
@@ -523,7 +520,7 @@ void ft_set_dump(char *str, t_arena *arena)
 			ft_exit("ERROR: nbr_cycles wrong ", "");
 	}
 }
-
+	
 int ft_find_next_avialable_number(t_list *players, int delta)
 {
 	int nbr;
@@ -646,6 +643,11 @@ void ft_read_args(t_arena *arena, int argc, char **argv)
 			ft_check_next_args(i, argc, argv, 1);
 			ft_set_dump(argv[++i], arena);
 		}
+		else if (ft_strequ(argv[i], "-v"))
+		{
+			ft_check_next_args(i, argc, argv, 1);
+			arena->verbose = ft_atoi(argv[++i]);
+		}
 		else
 			ft_read_champion(NULL, &(argv[i]), arena);
 	}
@@ -732,6 +734,10 @@ void ft_mark_death_carriages(t_list *carriages)
 		{
 			carriage->death = 1;
 			carriage->arena->carriages_nbr--;
+			if (carriage->arena->verbose & 8)
+				ft_printf("Process %d hasn't lived for %d cycles (CTD %d)\n", 
+				carriage->id, carriage->arena->nbr_cycles - carriage->last_live_cycle,
+				carriage->arena->cycles_to_die);
 		}
 }
 
@@ -754,85 +760,62 @@ int ft_check_arena(t_arena *arena)
 	return (0);
 }
 
-void ft_print_sti(t_carriage *carriage, int args[3])
+void ft_print_sti(t_carriage *carriage)
 {
-	(void)args;
 	ft_printf("r%d %d %d\n", carriage->reg_nbrs[0], carriage->values[1], carriage->values[2]);
 	ft_printf("       | -> store to %d + %d = %d (with pc and mod %d)\n", carriage->values[1], carriage->values[2], carriage->binary_op_result, carriage->target_pc);
 }
 
-void ft_print_ldi(t_carriage *carriage, int args[3])
+void ft_print_ldi(t_carriage *carriage)
 {
-	(void)args;
 	ft_printf("%d %d r%d\n", carriage->values[0], carriage->values[1], carriage->reg_nbrs[2]);
 	ft_printf("       | -> load from %d + %d = %d (with pc and mod %d)\n", carriage->values[0], carriage->values[1], carriage->binary_op_result, carriage->target_pc);
 }
 
-void ft_print_and_or_xor(t_carriage *carriage, int args[3])
+void ft_print_zjump(t_carriage *carriage)
 {
-	(void)args;
-		ft_printf("%d %d r%d\n", carriage->values[0], carriage->values[1], carriage->reg_nbrs[2]);
+	if (carriage->carry == 0)
+		ft_printf("%d FAILED\n", carriage->values[0]);
+	else
+		ft_printf("%d OK\n", carriage->values[0]);
+}
+
+void ft_print_common_op(t_carriage *carriage, int args[3])
+{
+	int i;
+	
+	i = -1;
+	while (++i < g_op_tab[carriage->op].max_params)
+		{
+			if (args[i] == REG_CODE)
+				ft_printf("r%d ", carriage->reg_nbrs[i]);
+			else
+				ft_printf("%d ", carriage->values[i]);	
+		}
+	ft_printf("\n");
 }
 
 void ft_print_op(t_carriage *carriage, int result, int args[3])
 {
-int i;
-char r[3];
-
-ft_bzero(r, 3);
-r[1] = 'r';
-i = -1;
-if (result && g_op_tab[carriage->op].op_code != 9)
-	return;
-else
-	{
-		ft_printf("P%5d | %s ", carriage->id, g_op_tab[carriage->op].name);
-		if (g_op_tab[carriage->op].op_code == 1)
-			{
-				ft_printf("%d\n", carriage->values[0]);
-				return;
-			}
-		if (g_op_tab[carriage->op].op_code == 12 || g_op_tab[carriage->op].op_code == 15)
-			{
-				ft_printf("%d (%d)\n", carriage->values[0], carriage->target_pc);
-				return;
-			}
-		if (g_op_tab[carriage->op].op_code == 11)
-			{
-				ft_print_sti(carriage, args);
-				return;
-			}
-		if (g_op_tab[carriage->op].op_code == 10)
-			{
-				ft_print_ldi(carriage, args);
-				return;
-			}
-		if (g_op_tab[carriage->op].op_code == 6 ||
-		g_op_tab[carriage->op].op_code == 7 ||
-		g_op_tab[carriage->op].op_code == 8)
-			{
-				ft_print_and_or_xor(carriage, args);
-				return;
-			}
-		if (result)
-		{
-			ft_printf("%d FAILED\n", carriage->values[0]);
-			return;
-		}
-		else if (g_op_tab[carriage->op].op_code == 9)
-		{
-			ft_printf("%d OK\n", carriage->values[0]);
-			return;
-		}
-		while (++i < g_op_tab[carriage->op].max_params)
-		{
-			if (args[i] == 1) //не подходит для фейковых безаргументных
-				ft_printf("%c%d ", r[args[i]],  carriage->reg_nbrs[i]);
-			else
-				ft_printf("%d ", carriage->values[i]);	
-		}
-		ft_printf("\n");
-	}
+	if (result && g_op_tab[carriage->op].op_code != 9)
+		return;
+	ft_printf("P%5d | %s ", carriage->id, g_op_tab[carriage->op].name);
+	if (g_op_tab[carriage->op].op_code == 12 || g_op_tab[carriage->op].op_code == 15)
+		ft_printf("%d (%d)\n", carriage->values[0], carriage->target_pc);
+	else if (g_op_tab[carriage->op].op_code == 11)
+		ft_print_sti(carriage);
+	else if (g_op_tab[carriage->op].op_code == 10 
+	|| g_op_tab[carriage->op].op_code == 14)
+		ft_print_ldi(carriage);
+	else if (g_op_tab[carriage->op].op_code == 6 ||
+	g_op_tab[carriage->op].op_code == 7 ||
+	g_op_tab[carriage->op].op_code == 8)
+		ft_printf("%d %d r%d\n", carriage->values[0], carriage->values[1],
+		carriage->reg_nbrs[2]);
+	else if (g_op_tab[carriage->op].op_code == 9)
+		ft_print_zjump(carriage);
+	else
+		ft_print_common_op(carriage, args); 
 }
 
 void	ft_check_op(t_carriage *carriage)
@@ -857,7 +840,8 @@ void ft_run_op(t_carriage *carriage)
 	args[1] = arg.value.at6;
 	args[2] = arg.value.at4;
 	result = g_op_tab[carriage->op].f(carriage, args);
-	ft_print_op(carriage, result, args);
+	if (carriage->arena->verbose & 4)
+		ft_print_op(carriage, result, args);
 }
 
 void ft_run_carriages(t_list *carriages)
@@ -903,7 +887,8 @@ void ft_start_game(t_arena *arena)
 			break;
 		}
 		(arena->nbr_cycles)++;
-	 	//ft_printf("It is now cycle %d\n", arena->nbr_cycles);
+	 	if (arena->verbose & 2)
+			ft_printf("It is now cycle %d\n", arena->nbr_cycles);
 		 ft_lstiter(arena->carriages, ft_run_carriages);
 		if (ft_check_arena(arena))
 			{
@@ -919,7 +904,16 @@ int main(int argc, char **argv)
 	t_arena arena;
 
 	if (argc < 2)
-		ft_exit("usage: ./corewar [-dump nbr_cycles] [[-n number] champion1.cor] ...", "");
+		ft_exit("\
+usage: ./corewar [-dump N -v N] [[-n N] champion1.cor] ...\n\
+	-dump N	: Dumps memory after N cycles then exits\n\
+	-v N : Verbosity levels, can be added together to enable several\n\
+		- 0 : Show only essentials\n\
+		- 1 : Show lives (default)\n\
+		- 2 : Show cycles\n\
+		- 4 : Show operations (Params are NOT litteral ...)\n\
+		- 8 : Show deaths\n\
+	-n N : Set unic champion number in bounds of quantity champions ", "");
 	ft_init_arena(&arena);
 	ft_read_args(&arena, argc, argv);
 	ft_put_players_to_arena(&arena);
