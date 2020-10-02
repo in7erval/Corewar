@@ -6,7 +6,7 @@
 /*   By: majosue <majosue@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/09/08 20:32:21 by majosue           #+#    #+#             */
-/*   Updated: 2020/10/01 04:25:39 by majosue          ###   ########.fr       */
+/*   Updated: 2020/10/01 06:41:38 by majosue          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -899,6 +899,27 @@ void ft_start_game(t_arena *arena)
 	}	
 }
 
+void del(void *memory, size_t size)
+{
+	ft_bzero(memory, size);
+	ft_memdel(&memory);
+}
+
+void del_player(void *memory, size_t size)
+{
+	ft_bzero(((t_player *)memory)->code, sizeof(t_player));
+	ft_memdel(&((t_player *)memory)->code);
+	ft_bzero(memory, size);
+	ft_memdel(&memory);
+}
+
+void ft_cleanup(t_arena *arena)
+{
+	ft_lstdel(&arena->carriages, del);
+	ft_lstdel(&arena->players, del_player);
+	free(arena->dump_nbr_cycles);
+}
+
 int main(int argc, char **argv)
 {
 	t_arena arena;
@@ -913,11 +934,11 @@ usage: ./corewar [-dump N -v N] [[-n N] champion1.cor] ...\n\
 		- 2 : Show cycles\n\
 		- 4 : Show operations (Params are NOT litteral ...)\n\
 		- 8 : Show deaths\n\
-	-n N : Set unic champion number in bounds of quantity champions ", "");
+	-n N : Set unic champion number", "");
 	ft_init_arena(&arena);
 	ft_read_args(&arena, argc, argv);
 	ft_put_players_to_arena(&arena);
 	ft_start_game(&arena);
-	//ft_cleanup(&arena);
+	ft_cleanup(&arena);
 	return (0);
 }
