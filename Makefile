@@ -2,7 +2,7 @@
 
 NAME = corewar
 CC = gcc
-FLAGS = -Wall -Werror -Wextra -O3 -g
+FLAGS = -Wall -Werror -Wextra -g
 LIBRARIES = -lft -L$(LIBFT_DIRECTORY) -lncurses
 
 INCLUDES = -I$(HEADERS_DIRECTORY) -I$(LIBFT_HEADERS)
@@ -11,7 +11,7 @@ LIBFT = $(LIBFT_DIRECTORY)libft.a
 LIBFT_DIRECTORY = ./libft/
 LIBFT_HEADERS = $(LIBFT_DIRECTORY)includes/
 
-HEADERS_LIST = corewar.h
+HEADERS_LIST = corewar.h corewar_vs.h
 HEADERS_DIRECTORY = ./includes/
 HEADERS = $(addprefix $(HEADERS_DIRECTORY), $(HEADERS_LIST))
 
@@ -19,7 +19,9 @@ HEADERS = $(addprefix $(HEADERS_DIRECTORY), $(HEADERS_LIST))
 
 SOURCES_DIRECTORY = ./sources/
 
-SOURCES_COREWAR_LIST = main.c visualize.c
+SOURCES_COREWAR_LIST = main.c ft_start_game.c ft_check_arena.c ft_print_op.c \
+ft_memmove_circle.c op_1_8.c op_9_16.c op_tools.c ft_read_args.c parser_tools.c \
+free_tools.c visualize.c
 
 
 SOURCES_COREWAR = $(addprefix $(SOURCES_DIRECTORY), $(SOURCES_COREWAR_LIST))

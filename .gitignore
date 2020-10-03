@@ -5,3 +5,4 @@ libft/objects/
 *.o
 .idea/
 corewar
+.DS_Store
