@@ -6,7 +6,7 @@
 /*   By: majosue <majosue@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/10/02 05:23:55 by majosue           #+#    #+#             */
-/*   Updated: 2020/10/03 08:12:44 by majosue          ###   ########.fr       */
+/*   Updated: 2020/10/03 08:30:32 by majosue          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,8 @@ void	del(void *memory, size_t size)
 
 void	del_player(void *memory, size_t size)
 {
-	ft_bzero(((t_player *)memory)->code, sizeof(MEM_SIZE));
+	ft_bzero(((t_player *)memory)->code,
+	sizeof(((t_player *)memory)->header.prog_size));
 	ft_memdel(&(((t_player *)memory)->code));
 	ft_bzero(memory, size);
 	ft_memdel(&memory);
