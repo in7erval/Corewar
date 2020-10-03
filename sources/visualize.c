@@ -50,7 +50,8 @@ void	draw_borders(void)
 
 int	get_attribute(t_arena *arena, t_attr *attr, size_t cycles)
 {
-	if (cycles != (size_t)arena->nbr_cycles && arena->cycles_to_die > 0 && attr->cycles_live > 0)
+	if (cycles != (size_t)arena->nbr_cycles && arena->cycles_to_die > 0
+		&& attr->cycles_live > 0)
 		attr->cycles_live--;
 	if (attr->cycles_live && attr->player)
 		return (g_colors[attr->player->nbr + 10] | A_BOLD);
@@ -176,13 +177,15 @@ void	print_map(t_visual *visual)
 
 void 	remove_carriage(t_arena *arena, t_carriage *carriage)
 {
-	if (arena->visual->map[carriage->pc].value >= 5 && arena->visual->map[carriage->pc].value <= 9)
+	if (arena->visual->map[carriage->pc].value >= 5 &&
+		arena->visual->map[carriage->pc].value <= 9)
 		arena->visual->map[carriage->pc].value -= 5;
 }
 
 void 	place_carriage(t_arena *arena, t_carriage *carriage)
 {
-	if (arena->visual->map[carriage->pc].value >= 0 && arena->visual->map[carriage->pc].value <= MAX_PLAYERS)
+	if (arena->visual->map[carriage->pc].value >= 0 &&
+		arena->visual->map[carriage->pc].value <= MAX_PLAYERS)
 		arena->visual->map[carriage->pc].value += 5;
 }
 

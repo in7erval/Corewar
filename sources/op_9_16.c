@@ -27,7 +27,11 @@ int	ft_zjmp(t_carriage *carriage, int args[3])
 		ft_skip_args(carriage, args, 1);
 		return (EXIT_FAILURE);
 	}
+	if (carriage->arena->v)
+		remove_carriage(carriage->arena, carriage);
 	carriage->pc = pc;
+	if (carriage->arena->v)
+		place_carriage(carriage->arena, carriage);
 	carriage->wait_cmd = 1;
 	return (EXIT_SUCCESS);
 }

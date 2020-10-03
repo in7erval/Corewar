@@ -21,7 +21,7 @@ int	ft_live(t_carriage *carriage, int args[3])
 	ft_load_params(carriage, args, 1, 0);
 	ft_load_values(carriage, args);
 	id = -carriage->values[0];
-	ft_skip_args(carriage, args, 1);
+
 	if ((player = ft_get_player(carriage->arena, id)))
 	{
 		if (carriage->arena->verbose & 1)
@@ -34,6 +34,7 @@ int	ft_live(t_carriage *carriage, int args[3])
 			carriage->arena->visual->map[carriage->pc].player = player;
 		}
 	}
+	ft_skip_args(carriage, args, 1);
 	carriage->arena->live_nbr++;
 	carriage->last_live_cycle = carriage->arena->nbr_cycles;
 	return (EXIT_SUCCESS);
