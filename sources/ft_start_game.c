@@ -59,9 +59,7 @@ void	ft_run_carriages(t_list *carriages)
 			ft_check_op(carriage);
 		}
 		else
-		{
 			ft_run_op(carriage);
-		}
 		return ;
 	}
 	carriage->cycles_to_exec--;

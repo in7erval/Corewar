@@ -72,10 +72,16 @@ typedef struct 			s_attr
 typedef struct 			s_visual
 {
 	t_attr				map[MEM_SIZE]; //map with attributes
+	int 				button;
+	clock_t 			time;
+	int 				cycles_per_sec;
+	int 				debug;
+	int 				is_running;
 }						t_visual;
 
 void 					place_carriage(t_arena *arena, t_carriage *carriage);
 void 					remove_carriage(t_arena *arena, t_carriage *carriage);
 void					visualize(t_arena *arena);
+void 					update_map(t_arena *arena, t_carriage *carriage, int addr, int size);
 
 #endif

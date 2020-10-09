@@ -25,6 +25,8 @@ typedef struct			s_player
 	int					nbr;
 	t_header			header;
 	void				*code;
+	int 				current_lives;
+	int 				last_live;
 }						t_player;
 
 typedef struct			s_arena
@@ -49,6 +51,7 @@ typedef struct			s_arena
 typedef struct			s_carriage
 {
 	int					id;
+	t_player			*owner;
 	int					pc;
 	int					wait_cmd;
 	unsigned char		*core;

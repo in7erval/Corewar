@@ -29,6 +29,18 @@ void	ft_mark_death_carriages(t_list *carriages)
 	}
 }
 
+void 	ft_reset_lives(t_list *players_list)
+{
+	t_player *player;
+
+	while (players_list)
+	{
+		player = (t_player *) players_list->content;
+		player->current_lives = 0;
+		players_list = players_list->next;
+	}
+}
+
 int		ft_check_arena(t_arena *arena)
 {
 	if (arena->cycles_to_die > 0 &&
@@ -47,5 +59,6 @@ int		ft_check_arena(t_arena *arena)
 	}
 	arena->checks_nbr++;
 	arena->live_nbr = 0;
+	ft_reset_lives(arena->players);
 	return (0);
 }

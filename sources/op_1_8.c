@@ -24,6 +24,8 @@ int	ft_live(t_carriage *carriage, int args[3])
 
 	if ((player = ft_get_player(carriage->arena, id)))
 	{
+		player->current_lives++;
+		player->last_live = carriage->arena->nbr_cycles;
 		if (carriage->arena->verbose & 1)
 			ft_printf("A process shows that player %d (%s) is alive\n",
 		id, player->header.prog_name);
@@ -72,12 +74,13 @@ int	ft_st(t_carriage *carriage, int args[3])
 		return (EXIT_FAILURE);
 	}
 	ft_load_params(carriage, args, 1, 1);
-	ft_memmove_circle(carriage->params[1],
-	carriage->params[0], carriage, REG_SIZE);
+	ft_memmove_circle(carriage->params[1], carriage->params[0], carriage, REG_SIZE);
 	ft_load_values(carriage, args);
-	if ((unsigned char*)carriage->params[1] - carriage->core >= 0 &&
-	(unsigned char*)carriage->params[1] - carriage->core < MEM_SIZE)
+	if ((unsigned char *)carriage->params[1] - carriage->core >= 0 &&
+		(unsigned char *)carriage->params[1] - carriage->core < MEM_SIZE)
 		carriage->values[1] = carriage->ind_val[1];
+	if (carriage->arena->v)
+		update_map(carriage->arena, carriage,((unsigned char *)carriage->params[1] - carriage->core), DIR_SIZE);
 	ft_skip_args(carriage, args, 2);
 	return (EXIT_SUCCESS);
 }
@@ -87,7 +90,7 @@ int	ft_add_sub(t_carriage *carriage, int args[3])
 	int result;
 
 	if (!(args[0] == REG_CODE && args[1] == REG_CODE &&
-args[2] == REG_CODE && ft_is_valid_regs(carriage, args)))
+		args[2] == REG_CODE && ft_is_valid_regs(carriage, args)))
 	{
 		ft_skip_args(carriage, args, 2);
 		return (EXIT_FAILURE);
@@ -109,7 +112,7 @@ int	ft_and_or_xor(t_carriage *carriage, int args[3])
 	int result;
 
 	if (!(args[0] != 0 && args[1] != 0 && args[2] == REG_CODE &&
-ft_is_valid_regs(carriage, args)))
+		ft_is_valid_regs(carriage, args)))
 	{
 		ft_skip_args(carriage, args, 2);
 		return (EXIT_FAILURE);

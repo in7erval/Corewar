@@ -116,10 +116,10 @@ void	ft_load_params(t_carriage *carriage,
 
 /*
 **	Store values at carriage->params in carriage->values
-**	use DIR_SIZE instead others (we alrady get adreses in load_params)
-**	use "g_op_tab[carriage->op].op_code == 0x0d ? 2 :size;"
-**	for repeat behavour of original corewar
-**	op 0x0d lld read 2 bytes on IND adress
+**	use DIR_SIZE instead others (we already get addresses in load_params)
+**	use "g_op_tab[carriage->op].op_code == 0x0d ? 2 : size;"
+**	for repeat behaviour of original corewar
+**	op 0x0d lld read 2 bytes on IND address
 */
 
 void	ft_load_values(t_carriage *carriage, int args[3])

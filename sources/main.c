@@ -92,7 +92,7 @@ void		ft_read_args(t_arena *arena, int argc, char **argv)
 	}
 }
 
-t_carriage	*ft_create_carriage(t_arena *arena)
+t_carriage	*ft_create_carriage(t_arena *arena, t_player *player)
 {
 	t_carriage	*carriage;
 
@@ -101,6 +101,7 @@ t_carriage	*ft_create_carriage(t_arena *arena)
 	carriage->core = arena->core;
 	carriage->wait_cmd = 1;
 	carriage->arena = arena;
+	carriage->owner = player;
 	return (carriage);
 }
 
@@ -115,7 +116,7 @@ void		ft_put_players_to_arena(t_arena *arena)
 	players = arena->players;
 	while (players)
 	{
-		carriage = ft_create_carriage(arena);
+		carriage = ft_create_carriage(arena, (t_player *)players->content);
 		carriage->pc = pc;
 		carriage->id = ((t_player*)players->content)->nbr;
 		carriage->regs[1] =
@@ -138,15 +139,15 @@ int			main(int argc, char **argv)
 
 	if (argc < 2)
 		ft_exit("\
-usage: ./corewar [-dump N -v N] [[-n N] champion1.cor] ...\n\
-	-dump N	: Dumps memory after N cycles then exits\n\
-	-v N : Verbosity levels, can be added together to enable several\n\
+		usage: ./corewar [-dump N -v N] [[-n N] champion1.cor] ...\n\
+		-dump N	: Dumps memory after N cycles then exits\n\
+		-v N : Verbosity levels, can be added together to enable several\n\
 		- 0 : Show only essentials\n\
 		- 1 : Show lives (default)\n\
 		- 2 : Show cycles\n\
 		- 4 : Show operations (Params are NOT litteral ...)\n\
 		- 8 : Show deaths\n\
-	-n N : Set unic champion number", "");
+		-n N : Set unic champion number", "");
 	ft_init_arena(&arena);
 	ft_read_args(&arena, argc, argv);
 	ft_put_players_to_arena(&arena);

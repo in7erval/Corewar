@@ -90,6 +90,8 @@ void		ft_read_champion(char **str, char **file, t_arena *arena)
 	player->header = ft_read_header(*file, &fd);
 	player->code = ft_read_code(&fd,
 	ft_reverse_bytes(player->header.prog_size), *file);
+	player->current_lives = 0;
+	player->last_live = 0;
 	if (!(new_player = ft_lstnew(player, sizeof(*player))))
 		ft_exit("ERROR", NULL);
 	ft_lstadd_back(&(arena->players), new_player);
