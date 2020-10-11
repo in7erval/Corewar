@@ -1,8 +1,9 @@
 .PHONY: all clean fclean re
 
-NAME = corewar
+COREWAR = corewar
+ASM = asm
 CC = gcc
-FLAGS = -Wall -Werror -Wextra -g
+FLAGS = -Wall -Werror -Wextra -O3 -g
 LIBRARIES = -lft -L$(LIBFT_DIRECTORY) -lncurses
 
 INCLUDES = -I$(HEADERS_DIRECTORY) -I$(LIBFT_HEADERS)
@@ -19,17 +20,43 @@ HEADERS = $(addprefix $(HEADERS_DIRECTORY), $(HEADERS_LIST))
 
 SOURCES_DIRECTORY = ./sources/
 
-SOURCES_COREWAR_LIST = main.c ft_start_game.c ft_check_arena.c ft_print_op.c \
-ft_memmove_circle.c op_1_8.c op_9_16.c op_tools.c ft_read_args.c parser_tools.c \
-free_tools.c visualize.c
+COREWAR_SOURCES_DIRECTORY = $(SOURCES_DIRECTORY)corewar/
+COREWAR_SOURCES_LIST = main.c \
+					ft_start_game.c \
+					ft_check_arena.c \
+					ft_print_op.c \
+					ft_memmove_circle.c \
+					op_1_8.c \
+					op_9_16.c \
+					op_tools.c \
+					ft_read_args.c \
+					parser_tools.c \
+					free_tools.c
+
+VISUAL_SOURCES_DIRECTORY = $(SOURCES_DIRECTORY)visual/
+VISUAL_SOURCES_LIST = colors.c \
+					draw_borders.c \
+					draw_core.c \
+					draw_info.c \
+					handle.c \
+					init.c \
+					map.c \
+					util.c \
+					visualize.c
+
+VISUAL_SOURCES = $(addprefix $(VISUAL_SOURCES_DIRECTORY), $(VISUAL_SOURCES_LIST))
+COREWAR_SOURCES = $(addprefix $(COREWAR_SOURCES_DIRECTORY), $(COREWAR_SOURCES_LIST))
 
 
-SOURCES_COREWAR = $(addprefix $(SOURCES_DIRECTORY), $(SOURCES_COREWAR_LIST))
+OBJECTS_DIRECTORY = ./objects/
 
+COREWAR_OBJECTS_DIRECTORY = $(OBJECTS_DIRECTORY)corewar/
+COREWAR_OBJECTS_LIST = $(patsubst %.c, %.o, $(COREWAR_SOURCES_LIST))
+COREWAR_OBJECTS	= $(addprefix $(COREWAR_OBJECTS_DIRECTORY), $(COREWAR_OBJECTS_LIST))
 
-OBJECTS_DIRECTORY = objects/
-OBJECTS_COREWAR_LIST = $(patsubst %.c, %.o, $(SOURCES_COREWAR_LIST))
-OBJECTS_COREWAR	= $(addprefix $(OBJECTS_DIRECTORY), $(OBJECTS_COREWAR_LIST))
+VISUAL_OBJECTS_DIRECTORY = $(OBJECTS_DIRECTORY)visual/
+VISUAL_OBJECTS_LIST = $(patsubst %.c, %.o, $(VISUAL_SOURCES_LIST))
+VISUAL_OBJECTS = $(addprefix $(VISUAL_OBJECTS_DIRECTORY), $(VISUAL_OBJECTS_LIST))
 
 # COLORS
 GREEN = \033[0;32m
@@ -47,19 +74,26 @@ BOLD_CYAN = \033[1;36m
 RESET = \033[0m
 
 
-all: $(NAME)
+all: $(COREWAR)
 	@echo "$(BOLD_RED) Ready! $(RESET)"
 
-$(NAME): $(LIBFT) $(OBJECTS_DIRECTORY) $(OBJECTS) $(OBJECTS_COREWAR)
-	@$(CC) $(FLAGS) $(LIBRARIES) $(INCLUDES) $(OBJECTS_COREWAR) -o $(NAME)
-	@echo "$(BOLD_CYAN)$(NAME) $(GREEN)is compiled$(RESET)"
+$(COREWAR): $(LIBFT) $(COREWAR_OBJECTS_DIRECTORY) $(VISUAL_OBJECTS_DIRECTORY) $(COREWAR_OBJECTS) $(VISUAL_OBJECTS)
+	@$(CC) $(FLAGS) $(LIBRARIES) $(INCLUDES) $(COREWAR_OBJECTS) $(VISUAL_OBJECTS) -o $(COREWAR)
+	@echo "$(BOLD_CYAN)$(COREWAR) $(GREEN)is compiled$(RESET)"
 
-$(OBJECTS_DIRECTORY)%.o : $(SOURCES_DIRECTORY)%.c $(HEADERS)
-	@echo "$(MAGENTA)Creating object file $(CYAN)$<$(RESET) $(MAGENTA)in $(OBJECTS_DIRECTORY)$(RESET)"
+$(COREWAR_OBJECTS_DIRECTORY):
+	@mkdir -p $(COREWAR_OBJECTS_DIRECTORY)
+
+$(VISUAL_OBJECTS_DIRECTORY):
+	@mkdir -p $(VISUAL_OBJECTS_DIRECTORY)
+
+$(COREWAR_OBJECTS_DIRECTORY)%.o : $(COREWAR_SOURCES_DIRECTORY)%.c $(HEADERS)
+	@echo "$(MAGENTA)Creating object file $(CYAN)$<$(RESET) $(MAGENTA)in $(COREWAR_OBJECTS_DIRECTORY)$(RESET)"
 	@$(CC) $(FLAGS) -c $(INCLUDES)  $< -o $@
 
-$(OBJECTS_DIRECTORY):
-	@mkdir -p $(OBJECTS_DIRECTORY)
+$(VISUAL_OBJECTS_DIRECTORY)%.o : $(VISUAL_SOURCES_DIRECTORY)%.c $(HEADERS)
+	@echo "$(MAGENTA)Creating object file $(CYAN)$<$(RESET) $(MAGENTA)in $(VISUAL_OBJECTS_DIRECTORY)$(RESET)"
+	@$(CC) $(FLAGS) -c $(INCLUDES)  $< -o $@
 
 $(LIBFT):
 	@cd $(LIBFT_DIRECTORY) && $(MAKE) -s
@@ -73,7 +107,7 @@ clean:
 fclean: clean
 	@rm -f $(LIBFT)
 	@echo "$(GREEN)$(LIBFT) $(RED)deleted$(RESET)"
-	@rm -f $(NAME)
+	@rm -f $(COREWAR)
 	@echo "$(GREEN)$(NAME) $(RED)deleted$(RESET)"
 
 re:

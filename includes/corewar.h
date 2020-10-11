@@ -46,6 +46,7 @@ typedef struct			s_arena
 	unsigned char		verbose;
 	t_visual			*visual;
 	int 				v;
+	int 				after_check;
 }						t_arena;
 
 typedef struct			s_carriage

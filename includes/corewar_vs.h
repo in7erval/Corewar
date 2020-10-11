@@ -77,11 +77,24 @@ typedef struct 			s_visual
 	int 				cycles_per_sec;
 	int 				debug;
 	int 				is_running;
+	int 				aff;
+	int 				has_aff;
 }						t_visual;
 
+t_visual				*init_visual(t_arena *arena);
+void 					init_window(void);
+void 					init_map(t_arena *arena);
+void					draw_carriages(t_arena *arena);
+void 					handle_keyboard(t_arena *arena);
+clock_t					calc_time_delay(t_visual *visual);
+void 					draw_aff(int c);
+void					draw_borders(void);
+void					draw_info(t_arena *arena);
+void					draw_core(t_arena *arena);
 void 					place_carriage(t_arena *arena, t_carriage *carriage);
 void 					remove_carriage(t_arena *arena, t_carriage *carriage);
 void					visualize(t_arena *arena);
 void 					update_map(t_arena *arena, t_carriage *carriage, int addr, int size);
-
+void 					draw_aff(int c);
+int						get_attribute(t_arena *arena, t_attr *attr, size_t cycles);
 #endif
