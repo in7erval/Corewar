@@ -4,7 +4,6 @@ objects/
 libft/objects/
 *.o
 .idea/
-corewar
 .DS_Store
 libft.a
 vm_champs/
