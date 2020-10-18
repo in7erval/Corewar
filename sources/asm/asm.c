@@ -7,13 +7,13 @@ t_asm	*init_asm(int fd)
 {
 	t_asm *assembler;
 
-	assembler = (t_asm *)malloc(sizeof(t_asm)); //todo:free
+	assembler = (t_asm *)ft_memalloc(sizeof(t_asm)); //todo:free
 	if (!assembler)
 		exit(0); //todo:add term
 	assembler->fd = fd;
-	assembler->row = 0;
-	assembler->column = 0;
-	assembler->tokens = NULL;
+	//assembler->row = 0;
+	//assembler->column = 0;
+	//assembler->tokens = NULL;
 	return (assembler);
 }
 
@@ -283,10 +283,114 @@ void 	parse_file(t_asm *assembler)
 	add_token(&(assembler->tokens), new_token(assembler, END));
 }
 
+
+void ft_get_token_name(int index, char name[15])
+{
+	char tokens[35][15];
+
+	ft_bzero(tokens, 35 * 15);
+	ft_strcpy(tokens[0x11], "COMMAND");
+	ft_strcpy(tokens[0x12], "STRING");
+	ft_strcpy(tokens[0x13], "LABEL");
+	ft_strcpy(tokens[0x13], "LABEL");
+	ft_strcpy(tokens[0x14], "INSTRUCTION");
+	ft_strcpy(tokens[0x15], "REGISTER");
+	ft_strcpy(tokens[0x16], "DIRECT");
+ 	ft_strcpy(tokens[0x17], "DIRECT_LABEL");
+	ft_strcpy(tokens[0x18], "INDIRECT");
+ 	ft_strcpy(tokens[0x19], "INDIRECT_LABEL");
+ 	ft_strcpy(tokens[0x20], "SEPARATOR");
+ 	ft_strcpy(tokens[0x21], "NEW_LINE");
+	ft_strcpy(tokens[0x22], "END");
+	ft_strcpy(name, tokens[index]);
+}
+
+/*
+**	
+*/
+
+void ft_asm_exit(char *str, int pos[2], t_token *token)
+{
+	char token_name[15];
+	
+	if (token)
+	{
+		ft_get_token_name(token->type, token_name);
+		ft_printf("Syntax error at token [TOKEN][%.3d:%.3d] %s \"%s\"\n",
+		token->row, token->column + 1, token_name, token->content);
+	}
+	else if (pos)
+		ft_printf("Lexical error at [%d:%d]\n", pos[0], pos[1]);
+	else if (str)
+		ft_printf("%s\n", str);
+	else
+		perror("ERROR");
+	exit (1);
+}
+
+void ft_skip_name(t_token **token, t_asm *assembler, int *heat)
+{
+	*token = (*token)->next;
+	if (ft_strlen((*token)->content) - 2 > PROG_NAME_LENGTH)
+	{
+		ft_printf("Champion name too long (Max length %d)\n",
+		PROG_NAME_LENGTH);
+		exit (1);
+	}
+	ft_memmove(assembler->header.prog_name, (*token)->content + 1,
+	ft_strlen((*token)->content) - 2);
+	*token = (*token)->next;
+	if ((*token)->type != NEW_LINE)
+		ft_asm_exit(NULL, NULL, *token);
+	*token = (*token)->next;
+	*heat = *heat | 1;
+}
+
+void ft_skip_comment(t_token **token, t_asm *assembler, int *heat)
+{
+	*token = (*token)->next;
+	if (ft_strlen((*token)->content) - 2 > COMMENT_LENGTH)
+	{
+		ft_printf("Champion comment too long (Max length %d)\n",
+		COMMENT_LENGTH);
+		exit (1);
+	}
+	ft_memmove(assembler->header.comment, (*token)->content + 1,
+	ft_strlen((*token)->content) - 2);
+	*token = (*token)->next;
+	if ((*token)->type != NEW_LINE)
+		ft_asm_exit(NULL, NULL, *token);
+	*token = (*token)->next;
+	*heat = *heat | 2;
+}
+
+void ft_skip_name_or_comment(t_token **token, t_asm *assembler, int *heat)
+{
+	if ((*token)->type != COMMAND)
+		ft_asm_exit(NULL, NULL, *token);
+	else if ((*token)->next->type != STRING)
+		ft_asm_exit(NULL, NULL, *token);
+	if (ft_strequ((*token)->content, NAME_CMD_STRING) && !(*heat & 1))
+		ft_skip_name(token, assembler, heat);
+	else if (ft_strequ((*token)->content, COMMENT_CMD_STRING) && !(*heat & 2))
+		ft_skip_comment(token, assembler, heat);
+	else
+		ft_asm_exit(NULL, NULL, *token);
+}
+
+void check_syntax(t_asm *assembler, t_token *tokens)
+{
+	int heat;
+	
+	heat = 0;
+	ft_skip_name_or_comment(&tokens, assembler, &heat);
+	ft_skip_name_or_comment(&tokens, assembler, &heat);
+}
+
 int main(int argc, char **argv)
 {
 	int		fd;
-	t_asm	*assembler;
+	t_asm	*assembler;			
 
 	if (argc != 2)
 		print_usage();
@@ -296,6 +400,7 @@ int main(int argc, char **argv)
 	assembler = init_asm(fd);
 	parse_file(assembler);
 	print_tokens(assembler->tokens);
+	check_syntax(assembler, assembler->tokens);
 	return (0);
 }
 

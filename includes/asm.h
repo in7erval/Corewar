@@ -33,6 +33,8 @@ typedef struct			s_asm
 	int 				fd;
 	unsigned int		row;
 	unsigned int		column;
+	t_header			header;
+	unsigned char		*bytecode;
 	t_token				*tokens;
 }						t_asm;
 
