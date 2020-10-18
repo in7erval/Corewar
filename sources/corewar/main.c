@@ -142,17 +142,16 @@ int			main(int argc, char **argv)
 
 	if (argc < 2)
 		ft_exit("\
-		Usage: ./corewar [-v -dump N -verbose N] [[-n N] champion1.cor] ...\n\
-			-v : Visual mode (with ncurses)\n\
-			-dump N	: Dumps memory after N cycles then exits\n\
-			-verbose N : Verbosity levels, can be added together to \
-enable several\n\
-				- 0 : Show only essentials\n\
-				- 1 : Show lives (default)\n\
-				- 2 : Show cycles\n\
-				- 4 : Show operations (Params are NOT litteral ...)\n\
-				- 8 : Show deaths\n\
-			-n N : Set unic champion number", "");
+Usage: ./corewar [-v -dump N -verbose N] [[-n N] champion1.cor] ...\n\
+	-v : Visual mode (with ncurses)\n\
+	-dump N	: Dumps memory after N cycles then exits\n\
+	-verbose N : Verbosity levels, can be added together to enable several\n\
+		- 0 : Show only essentials\n\
+		- 1 : Show lives (default)\n\
+		- 2 : Show cycles\n\
+		- 4 : Show operations (Params are NOT litteral ...)\n\
+		- 8 : Show deaths\n\
+	-n N : Set unic champion number", "");
 	ft_init_arena(&arena);
 	ft_read_args(&arena, argc, argv);
 	ft_put_players_to_arena(&arena);

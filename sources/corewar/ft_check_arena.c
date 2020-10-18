@@ -20,6 +20,8 @@ void	ft_mark_death_carriages(t_list *carriages)
 	if (carriage->death == 0 && (carriage->arena->nbr_cycles
 		- carriage->last_live_cycle) >= carriage->arena->cycles_to_die)
 	{
+		if (carriage->arena->v)
+			remove_carriage(carriage->arena, carriage);
 		carriage->death = 1;
 		carriage->arena->carriages_nbr--;
 		if (carriage->arena->verbose & 8)
