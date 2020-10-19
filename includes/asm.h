@@ -35,9 +35,39 @@ typedef struct			s_asm
 	unsigned int		column;
 	t_header			header;
 	unsigned char		*bytecode;
+	unsigned int		pos;
+	t_list				*labels;
 	t_token				*tokens;
 }						t_asm;
 
+typedef struct			s_label
+{
+	char				*label;
+	unsigned int		pos;
+}						t_label;
+
+typedef struct			s_op
+{
+	char		*name;
+	int			max_params;
+	int			types[3][4];
+	int			op_code;
+	int			acb;
+}						t_op;
+
+struct					s_byte
+{
+	unsigned at2: 2;
+	unsigned at4: 2;
+	unsigned at6: 2;
+	unsigned at8: 2;
+};
+
+typedef union			u_byte
+{
+	unsigned char	byte;
+	struct s_byte	value;
+}						t_arg_byte;
 
 int 	read_row(int fd, char **row);
 

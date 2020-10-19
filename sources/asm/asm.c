@@ -1,6 +1,28 @@
 
 # include "asm.h"
 
+t_op	g_op_tab[17] =
+{
+	{0,	0, {{0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}}, 0, 0},
+	/*								*/
+	{"live", 1, {{0, 0, T_DIR, 0}}, 1, 0},
+	{"ld", 2, {{0,0, T_DIR, T_IND}, {0, T_REG, 0, 0}}, 2, 1},
+	{"st", 2, {{0, T_REG, 0, 0}, {0, T_REG, 0, T_IND}}, 3, 1},
+	{"add", 3, {{0, T_REG}, {0, T_REG}, {0, T_REG}}, 4, 1},
+	{"sub", 3, {{T_REG, T_REG, T_REG}}, 5, 1},
+	{"and", 3, {{0, T_REG, T_DIR, T_IND}, {0, T_REG, T_DIR, T_IND}, {0, T_REG}}, 6, 1},
+	{"or", 3,  {{0, T_REG, T_DIR, T_IND}, {0, T_REG, T_DIR, T_IND}}, 7, 1},
+	{"xor", 3, {{0, T_REG, T_DIR, T_IND}, {0, T_REG, T_DIR, T_IND}}, 8, 1},
+	{"zjmp", 1, {{0, 0, T_DIR}}, 9, 0},
+	{"ldi", 3, {{0, T_REG, T_DIR / 2, T_IND}, { 0, T_REG, T_DIR / 2}, {0, T_REG}}, 10, 1},
+	{"sti", 3, {{0, T_REG}, {0, T_REG, T_DIR / 2, T_IND}, {0, T_REG, T_DIR / 2}}, 11, 1},
+	{"fork", 1, {{0, 0, T_DIR}}, 12, 0},
+	{"lld", 2, {{0, 0, T_DIR, T_IND}, {0, T_REG}}, 13, 1},
+	{"lldi", 3, {{0, T_REG, T_DIR / 2, T_IND}, {0, T_REG, T_DIR / 2}, {0, T_REG}}, 14, 1},
+	{"lfork", 1, {{0, 0, T_DIR}}, 15, 0},
+	{"aff", 1, {{0, T_REG}}, 16, 1}
+};
+
 void print_usage(void) {}
 
 t_asm	*init_asm(int fd)
@@ -306,13 +328,13 @@ void ft_get_token_name(int index, char name[15])
 }
 
 /*
-**	
+
 */
 
 void ft_asm_exit(char *str, int pos[2], t_token *token)
 {
 	char token_name[15];
-	
+
 	if (token)
 	{
 		ft_get_token_name(token->type, token_name);
@@ -362,6 +384,19 @@ void ft_skip_comment(t_token **token, t_asm *assembler, int *heat)
 		ft_asm_exit(NULL, NULL, *token);
 	*token = (*token)->next;
 	*heat = *heat | 2;
+
+}
+
+int ft_get_op_code(const char *name)
+{
+	int i = 0;
+
+	while (++i < 17)
+	{
+		if (ft_strequ(name, g_op_tab[i].name))
+			return (i);
+	}
+	return 0;
 }
 
 void ft_skip_name_or_comment(t_token **token, t_asm *assembler, int *heat)
@@ -378,19 +413,85 @@ void ft_skip_name_or_comment(t_token **token, t_asm *assembler, int *heat)
 		ft_asm_exit(NULL, NULL, *token);
 }
 
+void ft_skip_labels(t_token **token, t_asm *assembler)
+{
+	t_list	*new_label_node;
+	t_label	*label_content;
+
+	while((*token)->type == LABEL)
+	{
+		if (!(label_content = (t_label *)ft_memalloc(sizeof(*label_content))))
+			ft_asm_exit(NULL, NULL, NULL);
+		label_content->label = (*token)->content;
+		label_content->pos = assembler->pos;
+		if (!(new_label_node = ft_lstnew(label_content, sizeof(*label_content))))
+			ft_asm_exit(NULL, NULL, NULL);
+		ft_lstadd(&assembler->labels, new_label_node);
+		*token = (*token)->next->type == NEW_LINE ? (*token)->next->next : (*token)->next;
+	}
+}
+
+void ft_skip_args(int op, t_token **token, t_asm *assembler)
+{
+
+t_arg_byte acb;
+
+int direct;
+short indirect;
+int type_code;
+int byte;
+int i;
+
+i = 0;
+(void)assembler;
+	while ((*token)->type != NEW_LINE)
+	{
+		if (!(type_code = (*token)->type) || !g_op_tab[op].types[i][type_code] || i =  !g_op_tab[op].types[i][type_code])
+
+		*token = (*token)->next;
+	}
+	*token = (*token)->next;
+}
+
+void ft_skip_operator(t_token **token, t_asm *assembler)
+{
+	int op;
+
+	ft_skip_labels(token, assembler);
+	if ((*token)->type != END)
+		return;
+	if ((*token)->type != OPERATOR)
+		ft_asm_exit(NULL, NULL, *token);
+	if (!(op = ft_get_op_code((*token)->content)))
+		ft_asm_exit(NULL, NULL, *token);
+	*token = (*token)->next;
+	assembler->pos = 1 + g_op_tab[op].acb;
+	ft_skip_args(op, token, assembler);
+}
+
 void check_syntax(t_asm *assembler, t_token *tokens)
 {
 	int heat;
-	
+
 	heat = 0;
 	ft_skip_name_or_comment(&tokens, assembler, &heat);
 	ft_skip_name_or_comment(&tokens, assembler, &heat);
+	while (tokens && tokens->type != END)
+	{
+		ft_skip_operator(&tokens, assembler);
+	}
 }
+void debug_print_labels(t_list *node)
+{
+	t_label *label;
 
+	label = node->content;
+	ft_printf("label = \"%s\", pos = %d\n", label->label, label->pos);
+}
 int main(int argc, char **argv)
 {
 	int		fd;
-	t_asm	*assembler;			
+	t_asm	*assembler;
 
 	if (argc != 2)
 		print_usage();
@@ -401,6 +502,7 @@ int main(int argc, char **argv)
 	parse_file(assembler);
 	print_tokens(assembler->tokens);
 	check_syntax(assembler, assembler->tokens);
+	ft_lstiter(assembler->labels, debug_print_labels);
 	return (0);
 }
 
