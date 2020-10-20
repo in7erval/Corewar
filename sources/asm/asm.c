@@ -23,6 +23,8 @@ t_op	g_op_tab[17] =
 	{"aff", 1, {{0, T_REG}}, 16, 1}
 };
 
+unsigned char g_params[2][4] = {{0, T_REG, T_DIR, T_IND}, {0, T_REG, 2, T_IND}};
+
 void print_usage(void) {}
 
 t_asm	*init_asm(int fd)
@@ -239,7 +241,7 @@ void 	parse_token(t_asm *assembler, char **row)
 	else if ((*row)[assembler->column] == LABEL_CHAR)
 	{
 		assembler->column++;
-		parse_symbols(assembler, *row, assembler->column - 2, new_token(assembler, INDIRECT_LABEL));
+		parse_symbols(assembler, *row, assembler->column - 1, new_token(assembler, INDIRECT_LABEL));
 	}
 	else
 		parse_number(assembler, *row, assembler->column, new_token(assembler, INDIRECT));
@@ -266,8 +268,10 @@ void 	print_tokens(t_token *tokens)
 			ft_printf("direct");
 		else if (tokens->type == DIRECT_LABEL)
 			ft_printf("direct_label");
-		else if (tokens->type == INDIRECT)
+		else if (tokens->type == INDIRECT_LABEL)
 			ft_printf("inderect_label");
+		else if (tokens->type == INDIRECT)
+			ft_printf("inderect");
 		else if (tokens->type == SEPARATOR)
 			ft_printf("separator");
 		else if (tokens->type == NEW_LINE)
@@ -306,40 +310,45 @@ void 	parse_file(t_asm *assembler)
 }
 
 
-void ft_get_token_name(int index, char name[15])
+char *ft_get_token_name(int index, int upercase)
 {
 	char tokens[35][15];
+	char *name;
 
 	ft_bzero(tokens, 35 * 15);
-	ft_strcpy(tokens[0x11], "COMMAND");
-	ft_strcpy(tokens[0x12], "STRING");
-	ft_strcpy(tokens[0x13], "LABEL");
-	ft_strcpy(tokens[0x13], "LABEL");
-	ft_strcpy(tokens[0x14], "INSTRUCTION");
-	ft_strcpy(tokens[0x15], "REGISTER");
-	ft_strcpy(tokens[0x16], "DIRECT");
- 	ft_strcpy(tokens[0x17], "DIRECT_LABEL");
-	ft_strcpy(tokens[0x18], "INDIRECT");
- 	ft_strcpy(tokens[0x19], "INDIRECT_LABEL");
- 	ft_strcpy(tokens[0x20], "SEPARATOR");
- 	ft_strcpy(tokens[0x21], "NEW_LINE");
-	ft_strcpy(tokens[0x22], "END");
-	ft_strcpy(name, tokens[index]);
+	ft_strcpy(tokens[0x11], "command");
+	ft_strcpy(tokens[0x12], "string");
+	ft_strcpy(tokens[0x13], "label");
+	ft_strcpy(tokens[0x14], "instruction");
+	ft_strcpy(tokens[0x15], "register");
+	ft_strcpy(tokens[0x16], "direct");
+ 	ft_strcpy(tokens[0x17], "direct_label");
+	ft_strcpy(tokens[0x18], "indirect");
+ 	ft_strcpy(tokens[0x19], "indirect_label");
+ 	ft_strcpy(tokens[0x20], "separator");
+ 	ft_strcpy(tokens[0x21], "new_line");
+	ft_strcpy(tokens[0x22], "end");
+	if (!(name = ft_strdup(tokens[index])))
+		ft_asm_exit(NULL, NULL, NULL);
+	if (upercase)
+		name = ft_str_to_upper(name);
+	return (name);
 }
 
 /*
-
+**	todo add "," to separator content
 */
 
 void ft_asm_exit(char *str, int pos[2], t_token *token)
 {
-	char token_name[15];
+	char *token_name;
 
 	if (token)
 	{
-		ft_get_token_name(token->type, token_name);
+		token_name = ft_get_token_name(token->type, 1);
 		ft_printf("Syntax error at token [TOKEN][%.3d:%.3d] %s \"%s\"\n",
 		token->row, token->column + 1, token_name, token->content);
+		ft_strdel(&token_name);
 	}
 	else if (pos)
 		ft_printf("Lexical error at [%d:%d]\n", pos[0], pos[1]);
@@ -431,25 +440,44 @@ void ft_skip_labels(t_token **token, t_asm *assembler)
 	}
 }
 
+int ft_get_arg_type_code(int type)
+{
+	if (type == REGISTER)
+		return (1);
+	else if (type == DIRECT || type == DIRECT_LABEL)
+		return (2);
+	else if (type == INDIRECT || type == INDIRECT_LABEL)
+		return (3);
+	return (0);
+}
+
+
 void ft_skip_args(int op, t_token **token, t_asm *assembler)
 {
+	int args[3];
+	int i;
+	char *token_name;
 
-t_arg_byte acb;
-
-int direct;
-short indirect;
-int type_code;
-int byte;
-int i;
-
-i = 0;
-(void)assembler;
+	i = 0;
+	ft_bzero(args, sizeof(int) * 3);
 	while ((*token)->type != NEW_LINE)
 	{
-		if (!(type_code = (*token)->type) || !g_op_tab[op].types[i][type_code] || i =  !g_op_tab[op].types[i][type_code])
-
-		*token = (*token)->next;
+		if (!(args[i] = ft_get_arg_type_code((*token)->type)))
+			ft_asm_exit(NULL, NULL, *token);
+		if (!g_op_tab[op].types[i][args[i]] || i >= g_op_tab[op].max_params)
+		{
+			token_name = ft_get_token_name((*token)->type, 0);
+			ft_printf("Invalid parameter %d type %s for instruction %s\n", i, token_name, g_op_tab[op].name); //to do: replace type code with string
+			ft_strdel(&token_name);
+			exit (1);
+		}
+		i++;
+		*token = (*token)->next->type == SEPARATOR ?
+		(*token)->next->next : (*token)->next;
 	}
+	if (i == 0)
+		ft_asm_exit(NULL, NULL, *token);
+	assembler->pos += 1 + g_op_tab[op].acb + g_op_tab[op].types[0][args[0]] + g_op_tab[op].types[1][args[1]] + g_op_tab[op].types[2][args[2]];
 	*token = (*token)->next;
 }
 
@@ -458,14 +486,13 @@ void ft_skip_operator(t_token **token, t_asm *assembler)
 	int op;
 
 	ft_skip_labels(token, assembler);
-	if ((*token)->type != END)
+	if ((*token)->type == END)
 		return;
 	if ((*token)->type != OPERATOR)
 		ft_asm_exit(NULL, NULL, *token);
 	if (!(op = ft_get_op_code((*token)->content)))
 		ft_asm_exit(NULL, NULL, *token);
 	*token = (*token)->next;
-	assembler->pos = 1 + g_op_tab[op].acb;
 	ft_skip_args(op, token, assembler);
 }
 

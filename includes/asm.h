@@ -77,5 +77,7 @@ int		is_register(const char *str);
 
 void skip_whitespaces(t_asm *assembler, const char *row);
 void skip_comment(t_asm *assembler, const char *row);
+void ft_asm_exit(char *str, int pos[2], t_token *token);
+
 
 #endif //COREWAR_ASM_H
