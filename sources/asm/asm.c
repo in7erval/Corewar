@@ -55,6 +55,12 @@ t_token		*new_token(t_asm *assembler, int type)
 		token->column = assembler->column - 1;
 	else
 		token->column = assembler->column;
+	if (type == SEPARATOR)
+	{
+		if (!(token->content = ft_strnew(1)))
+			ft_asm_exit(NULL, NULL, NULL);
+		token->content[0] = SEPARATOR_CHAR;
+	}
 	token->next = NULL;
 	return (token);
 }
@@ -336,7 +342,7 @@ char *ft_get_token_name(int index, int upercase)
 }
 
 /*
-**	todo add "," to separator content
+**
 */
 
 void ft_asm_exit(char *str, int pos[2], t_token *token)
@@ -443,41 +449,83 @@ void ft_skip_labels(t_token **token, t_asm *assembler)
 int ft_get_arg_type_code(int type)
 {
 	if (type == REGISTER)
-		return (1);
+		return (REG_CODE);
 	else if (type == DIRECT || type == DIRECT_LABEL)
-		return (2);
+		return (DIR_CODE);
 	else if (type == INDIRECT || type == INDIRECT_LABEL)
-		return (3);
+		return (IND_CODE);
 	return (0);
 }
 
-
-void ft_skip_args(int op, t_token **token, t_asm *assembler)
+void	ft_print_memory(void *mem, size_t size)
 {
-	int args[3];
-	int i;
-	char *token_name;
+	size_t i;
+	size_t ofset;
 
 	i = 0;
+	ofset = 0;
+	while (i < size)
+	{
+		if (i / 32 && !(i % 32))
+			ft_printf("\n");
+		if (!(i % 32))
+		{
+			ft_printf("0x%.4x :", (int)ofset);
+			ofset += 32;
+		}
+		ft_printf(" ");
+		ft_printf("%.2x", ((unsigned char*)(mem))[i]);
+		i++;
+	}
+	ft_printf("\n");
+}
+
+void ft_write_to_buffer(int *pos, char buffer[32], t_token *token)
+{
+
+}
+/*
+**	Идти и по кускам писать в буфер
+*/
+void ft_skip_args(int op, t_token **token, t_asm *assembler)
+{
+	int args[3]; // тоже не нужны будут
+	unsigned char buffer[32];
+	int pos;
+	int i;
+	char *token_name; //уйдет
+
+	i = 0;
+	pos = 0;
 	ft_bzero(args, sizeof(int) * 3);
+	ft_bzero(buffer, 32);
+	buffer[pos] = op;
+	pos += 1 + g_op_tab[op].acb;
+	ft_print_memory(buffer, 32);
+	//exit (1); //stop point
 	while ((*token)->type != NEW_LINE)
 	{
+		// вот тут заход в функцию с передачпй i pos token buffer
+		
 		if (!(args[i] = ft_get_arg_type_code((*token)->type)))
 			ft_asm_exit(NULL, NULL, *token);
 		if (!g_op_tab[op].types[i][args[i]] || i >= g_op_tab[op].max_params)
 		{
 			token_name = ft_get_token_name((*token)->type, 0);
-			ft_printf("Invalid parameter %d type %s for instruction %s\n", i, token_name, g_op_tab[op].name); //to do: replace type code with string
+			ft_printf("Invalid parameter %d type %s for instruction %s\n",
+			i, token_name, g_op_tab[op].name);
 			ft_strdel(&token_name);
 			exit (1);
 		}
+		// тут выход
 		i++;
 		*token = (*token)->next->type == SEPARATOR ?
 		(*token)->next->next : (*token)->next;
 	}
 	if (i == 0)
 		ft_asm_exit(NULL, NULL, *token);
-	assembler->pos += 1 + g_op_tab[op].acb + g_op_tab[op].types[0][args[0]] + g_op_tab[op].types[1][args[1]] + g_op_tab[op].types[2][args[2]];
+	assembler->pos += 1 + g_op_tab[op].acb + g_op_tab[op].types[0][args[0]] +
+	g_op_tab[op].types[1][args[1]] + g_op_tab[op].types[2][args[2]];
 	*token = (*token)->next;
 }
 
