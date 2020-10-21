@@ -46,6 +46,15 @@ typedef struct			s_label
 	unsigned int		pos;
 }						t_label;
 
+typedef struct s_instruction
+{
+	int					g_pos;
+	unsigned char		args[3];
+	int					values[3];
+	unsigned char		acb;
+	unsigned char		byte_code[32];
+}						t_instruction;
+
 typedef struct			s_op
 {
 	char		*name;
@@ -77,7 +86,7 @@ int		is_register(const char *str);
 
 void skip_whitespaces(t_asm *assembler, const char *row);
 void skip_comment(t_asm *assembler, const char *row);
-void ft_asm_exit(char *str, int pos[2], t_token *token);
+void ft_asm_exit(char *str, int pos[2], int *i, t_token *token);
 
 
 #endif //COREWAR_ASM_H

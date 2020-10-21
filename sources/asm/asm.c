@@ -58,7 +58,7 @@ t_token		*new_token(t_asm *assembler, int type)
 	if (type == SEPARATOR)
 	{
 		if (!(token->content = ft_strnew(1)))
-			ft_asm_exit(NULL, NULL, NULL);
+			ft_asm_exit(NULL, NULL, NULL, NULL);
 		token->content[0] = SEPARATOR_CHAR;
 	}
 	token->next = NULL;
@@ -335,7 +335,7 @@ char *ft_get_token_name(int index, int upercase)
  	ft_strcpy(tokens[0x21], "new_line");
 	ft_strcpy(tokens[0x22], "end");
 	if (!(name = ft_strdup(tokens[index])))
-		ft_asm_exit(NULL, NULL, NULL);
+		ft_asm_exit(NULL, NULL, NULL, NULL);
 	if (upercase)
 		name = ft_str_to_upper(name);
 	return (name);
@@ -345,11 +345,18 @@ char *ft_get_token_name(int index, int upercase)
 **
 */
 
-void ft_asm_exit(char *str, int pos[2], t_token *token)
+void ft_asm_exit(char *str, int pos[2], int *i, t_token *token)
 {
 	char *token_name;
 
-	if (token)
+	if (token && i)
+	{
+		token_name = ft_get_token_name(token->type, 0);
+		ft_printf("Invalid parameter %d type %s for instruction %s\n",
+		*i, token_name, token->content);
+		ft_strdel(&token_name);
+	}
+	else if (token)
 	{
 		token_name = ft_get_token_name(token->type, 1);
 		ft_printf("Syntax error at token [TOKEN][%.3d:%.3d] %s \"%s\"\n",
@@ -378,7 +385,7 @@ void ft_skip_name(t_token **token, t_asm *assembler, int *heat)
 	ft_strlen((*token)->content) - 2);
 	*token = (*token)->next;
 	if ((*token)->type != NEW_LINE)
-		ft_asm_exit(NULL, NULL, *token);
+		ft_asm_exit(NULL, NULL, NULL, *token);
 	*token = (*token)->next;
 	*heat = *heat | 1;
 }
@@ -396,7 +403,7 @@ void ft_skip_comment(t_token **token, t_asm *assembler, int *heat)
 	ft_strlen((*token)->content) - 2);
 	*token = (*token)->next;
 	if ((*token)->type != NEW_LINE)
-		ft_asm_exit(NULL, NULL, *token);
+		ft_asm_exit(NULL, NULL, NULL, *token);
 	*token = (*token)->next;
 	*heat = *heat | 2;
 
@@ -417,15 +424,15 @@ int ft_get_op_code(const char *name)
 void ft_skip_name_or_comment(t_token **token, t_asm *assembler, int *heat)
 {
 	if ((*token)->type != COMMAND)
-		ft_asm_exit(NULL, NULL, *token);
+		ft_asm_exit(NULL, NULL, NULL, *token);
 	else if ((*token)->next->type != STRING)
-		ft_asm_exit(NULL, NULL, *token);
+		ft_asm_exit(NULL, NULL, NULL, *token);
 	if (ft_strequ((*token)->content, NAME_CMD_STRING) && !(*heat & 1))
 		ft_skip_name(token, assembler, heat);
 	else if (ft_strequ((*token)->content, COMMENT_CMD_STRING) && !(*heat & 2))
 		ft_skip_comment(token, assembler, heat);
 	else
-		ft_asm_exit(NULL, NULL, *token);
+		ft_asm_exit(NULL, NULL, NULL, *token);
 }
 
 void ft_skip_labels(t_token **token, t_asm *assembler)
@@ -436,11 +443,11 @@ void ft_skip_labels(t_token **token, t_asm *assembler)
 	while((*token)->type == LABEL)
 	{
 		if (!(label_content = (t_label *)ft_memalloc(sizeof(*label_content))))
-			ft_asm_exit(NULL, NULL, NULL);
+			ft_asm_exit(NULL, NULL, NULL, NULL);
 		label_content->label = (*token)->content;
 		label_content->pos = assembler->pos;
 		if (!(new_label_node = ft_lstnew(label_content, sizeof(*label_content))))
-			ft_asm_exit(NULL, NULL, NULL);
+			ft_asm_exit(NULL, NULL, NULL, NULL);
 		ft_lstadd(&assembler->labels, new_label_node);
 		*token = (*token)->next->type == NEW_LINE ? (*token)->next->next : (*token)->next;
 	}
@@ -480,52 +487,64 @@ void	ft_print_memory(void *mem, size_t size)
 	ft_printf("\n");
 }
 
-void ft_write_to_buffer(int *pos, char buffer[32], t_token *token)
+/* void ft_write_to_buffer(int *pos, char buffer[32], t_token *token)
 {
 
+} */
+
+void ft_check_reg(int *pos, t_instruction *opr, t_token *token)
+{
+	int reg_value;
+
+	reg_value = ft_atoi(token->content + 1);
+	if (reg_value <= 0 || reg_value > 99)
+		ft_asm_exit(NULL, NULL, NULL, token);
+	ft_memmove(&opr->byte_code[*pos], &reg_value, T_REG);
+	ft_print_memory(opr->byte_code, 32);
+	exit (1);
 }
+
+void	ft_check_arg(int i, int *pos, t_instruction *opr, t_token *token)
+{
+
+	if (!(opr->args[i] = ft_get_arg_type_code((token)->type)))
+		ft_asm_exit(NULL, NULL, NULL, token);
+	if (!g_op_tab[opr->byte_code[0]].types[i][opr->args[i]] || i >= g_op_tab[opr->byte_code[0]].max_params)
+		ft_asm_exit(NULL, NULL, &i, token);
+	if (opr->args[i] == REG_CODE)
+		ft_check_reg(pos, opr, token);
+	/* else if (opr->args[i] == DIR_CODE)
+		ft_check_dir(pos, opr, token);
+	else
+		ft_check_ind(pos, opr, token); */
+}
+
 /*
-**	Идти и по кускам писать в буфер
+**
 */
+
 void ft_skip_args(int op, t_token **token, t_asm *assembler)
 {
-	int args[3]; // тоже не нужны будут
-	unsigned char buffer[32];
 	int pos;
 	int i;
-	char *token_name; //уйдет
+	t_instruction	opr;
 
 	i = 0;
 	pos = 0;
-	ft_bzero(args, sizeof(int) * 3);
-	ft_bzero(buffer, 32);
-	buffer[pos] = op;
+	ft_bzero(&opr, sizeof(opr));
+	opr.byte_code[pos] = op;
 	pos += 1 + g_op_tab[op].acb;
-	ft_print_memory(buffer, 32);
-	//exit (1); //stop point
+	opr.g_pos = assembler->pos;
 	while ((*token)->type != NEW_LINE)
 	{
-		// вот тут заход в функцию с передачпй i pos token buffer
-		
-		if (!(args[i] = ft_get_arg_type_code((*token)->type)))
-			ft_asm_exit(NULL, NULL, *token);
-		if (!g_op_tab[op].types[i][args[i]] || i >= g_op_tab[op].max_params)
-		{
-			token_name = ft_get_token_name((*token)->type, 0);
-			ft_printf("Invalid parameter %d type %s for instruction %s\n",
-			i, token_name, g_op_tab[op].name);
-			ft_strdel(&token_name);
-			exit (1);
-		}
-		// тут выход
+		ft_check_arg(i, &pos, &opr, *token);
 		i++;
 		*token = (*token)->next->type == SEPARATOR ?
 		(*token)->next->next : (*token)->next;
 	}
 	if (i == 0)
-		ft_asm_exit(NULL, NULL, *token);
-	assembler->pos += 1 + g_op_tab[op].acb + g_op_tab[op].types[0][args[0]] +
-	g_op_tab[op].types[1][args[1]] + g_op_tab[op].types[2][args[2]];
+		ft_asm_exit(NULL, NULL, NULL, *token);
+	assembler->pos += pos;
 	*token = (*token)->next;
 }
 
@@ -537,9 +556,9 @@ void ft_skip_operator(t_token **token, t_asm *assembler)
 	if ((*token)->type == END)
 		return;
 	if ((*token)->type != OPERATOR)
-		ft_asm_exit(NULL, NULL, *token);
+		ft_asm_exit(NULL, NULL, NULL, *token);
 	if (!(op = ft_get_op_code((*token)->content)))
-		ft_asm_exit(NULL, NULL, *token);
+		ft_asm_exit(NULL, NULL, NULL, *token);
 	*token = (*token)->next;
 	ft_skip_args(op, token, assembler);
 }
