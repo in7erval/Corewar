@@ -64,20 +64,6 @@ typedef struct			s_op
 	int			acb;
 }						t_op;
 
-struct					s_byte
-{
-	unsigned at2: 2;
-	unsigned at4: 2;
-	unsigned at6: 2;
-	unsigned at8: 2;
-};
-
-typedef union			u_byte
-{
-	unsigned char	byte;
-	struct s_byte	value;
-}						t_arg_byte;
-
 int 	read_row(int fd, char **row);
 
 int 	is_whitespace(char c);

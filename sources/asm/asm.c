@@ -23,8 +23,6 @@ t_op	g_op_tab[17] =
 	{"aff", 1, {{0, T_REG}}, 16, 1}
 };
 
-unsigned char g_params[2][4] = {{0, T_REG, T_DIR, T_IND}, {0, T_REG, 2, T_IND}};
-
 void print_usage(void) {}
 
 t_asm	*init_asm(int fd)
