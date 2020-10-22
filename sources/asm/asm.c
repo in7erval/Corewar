@@ -13,10 +13,10 @@ t_op	g_op_tab[17] =
 	{"and", 3, {{0, T_REG, T_DIR, T_IND}, {0, T_REG, T_DIR, T_IND}, {0, T_REG}}, 6, 1},
 	{"or", 3,  {{0, T_REG, T_DIR, T_IND}, {0, T_REG, T_DIR, T_IND}}, 7, 1},
 	{"xor", 3, {{0, T_REG, T_DIR, T_IND}, {0, T_REG, T_DIR, T_IND}}, 8, 1},
-	{"zjmp", 1, {{0, 0, T_DIR}}, 9, 0},
+	{"zjmp", 1, {{0, 0, T_DIR / 2}}, 9, 0},
 	{"ldi", 3, {{0, T_REG, T_DIR / 2, T_IND}, { 0, T_REG, T_DIR / 2}, {0, T_REG}}, 10, 1},
 	{"sti", 3, {{0, T_REG}, {0, T_REG, T_DIR / 2, T_IND}, {0, T_REG, T_DIR / 2}}, 11, 1},
-	{"fork", 1, {{0, 0, T_DIR}}, 12, 0},
+	{"fork", 1, {{0, 0, T_DIR / 2}}, 12, 0},
 	{"lld", 2, {{0, 0, T_DIR, T_IND}, {0, T_REG}}, 13, 1},
 	{"lldi", 3, {{0, T_REG, T_DIR / 2, T_IND}, {0, T_REG, T_DIR / 2}, {0, T_REG}}, 14, 1},
 	{"lfork", 1, {{0, 0, T_DIR}}, 15, 0},
@@ -535,7 +535,7 @@ void ft_check_dir(t_instruction *opr, t_token *token, t_asm *assembler)
 	int t_dir_size;
 
 	t_dir_size = opr->byte_code[0] == 10 || opr->byte_code[0] == 11 ||
-	opr->byte_code[0] == 14 || opr->byte_code[0] == 12 ?
+	opr->byte_code[0] == 14 || opr->byte_code[0] == 12 || opr->byte_code[0] == 9 ?
 	T_DIR / 2 : T_DIR;
 	if (token->type == DIRECT_LABEL)
 		ft_add_label_replace_point(token->content + 2, opr, t_dir_size, assembler);
@@ -715,6 +715,22 @@ void insert_labels_values(t_asm *assembler)
 
 }
 
+void write_file(t_asm *assembler, char *name)
+{
+	char *output_name;
+	int fd;
+
+	output_name = ft_strsub(name, 0, ft_strlen(name) - 2);
+	output_name = ft_strjoin(output_name, ".cor");
+	fd = open(output_name,  O_WRONLY | O_CREAT, 0644);
+	if (fd < 0)
+		ft_asm_exit(NULL, NULL, NULL, NULL);
+	assembler->header.magic = ft_reverse_bytes(COREWAR_EXEC_MAGIC);
+	assembler->header.prog_size = ft_reverse_bytes(assembler->pos);
+	write(fd, &assembler->header, sizeof(assembler->header));
+	write(fd, assembler->bytecode, assembler->pos);
+}
+
 int main(int argc, char **argv)
 {
 	int		fd;
@@ -730,6 +746,7 @@ int main(int argc, char **argv)
 	print_tokens(assembler->tokens);
 	check_syntax(assembler, assembler->tokens);
 	insert_labels_values(assembler);
+	write_file(assembler, argv[1]);
 	ft_lstiter(assembler->labels, debug_print_labels);
 	ft_lstiter(assembler->labels_replace_list , debug_print_replace_list);
 	ft_print_memory(assembler->bytecode, assembler->pos);
