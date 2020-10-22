@@ -37,6 +37,7 @@ typedef struct			s_asm
 	unsigned char		*bytecode;
 	unsigned int		pos;
 	t_list				*labels;
+	t_list				*labels_replace_list;
 	t_token				*tokens;
 }						t_asm;
 
@@ -46,9 +47,17 @@ typedef struct			s_label
 	unsigned int		pos;
 }						t_label;
 
+typedef struct			s_rlabel_replace
+{
+	char				*label;
+	int					opr_pos;
+	int					insert_pos;
+	int					size;
+}						t_label_replace;
+
 typedef struct s_instruction
 {
-	int					g_pos;
+	int					pos;
 	unsigned char		args[3];
 	int					values[3];
 	unsigned char		acb;

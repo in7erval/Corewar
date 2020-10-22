@@ -490,19 +490,80 @@ void	ft_print_memory(void *mem, size_t size)
 
 } */
 
-void ft_check_reg(int *pos, t_instruction *opr, t_token *token)
+void ft_check_reg(t_instruction *opr, t_token *token)
 {
 	int reg_value;
 
 	reg_value = ft_atoi(token->content + 1);
 	if (reg_value <= 0 || reg_value > 99)
 		ft_asm_exit(NULL, NULL, NULL, token);
-	ft_memmove(&opr->byte_code[*pos], &reg_value, T_REG);
-	ft_print_memory(opr->byte_code, 32);
-	exit (1);
+	ft_memmove(&opr->byte_code[opr->pos], &reg_value, T_REG);
+	opr->pos += T_REG;
+	//exit (1);
 }
 
-void	ft_check_arg(int i, int *pos, t_instruction *opr, t_token *token)
+unsigned int	ft_reverse_bytes(unsigned int value)
+{
+	return (value & 0x000000FFU) << 24 | (value & 0x0000FF00U) << 8 |
+	(value & 0x00FF0000U) >> 8 | (value & 0xFF000000U) >> 24;
+}
+
+void ft_add_label_replace_point(char *label, t_instruction *opr, int size, t_asm *assembler)
+{
+	t_list	*new_point;
+	t_label_replace	*new_point_content;
+
+		if (!(new_point_content = (t_label_replace *)ft_memalloc(sizeof(*new_point_content))))
+			ft_asm_exit(NULL, NULL, NULL, NULL);
+		new_point_content->label = label;
+		new_point_content->opr_pos = assembler->pos;
+		new_point_content->insert_pos = opr->pos;
+		new_point_content->size = size;
+		if (!(new_point = ft_lstnew(new_point_content, sizeof(*new_point_content))))
+			ft_asm_exit(NULL, NULL, NULL, NULL);
+		ft_lstadd(&assembler->labels_replace_list, new_point);
+}
+
+/*
+** todo make dif size dir?
+*/
+
+
+void ft_check_dir(t_instruction *opr, t_token *token, t_asm *assembler)
+{
+	int dir_value;
+	int t_dir_size;
+	
+	t_dir_size = opr->byte_code[0] == 10 || opr->byte_code[0] == 11 || opr->byte_code[0] == 14 ?
+	T_DIR / 2 : T_DIR;
+	if (token->type == DIRECT_LABEL)
+		ft_add_label_replace_point(token->content + 2, opr, t_dir_size, assembler);
+	else
+	{
+		dir_value = ft_atoi(token->content + 1);
+		dir_value = ft_reverse_bytes(dir_value);
+		ft_memmove(&opr->byte_code[opr->pos], &dir_value, t_dir_size);
+	}
+	opr->pos += t_dir_size;
+}
+
+void ft_check_ind(t_instruction *opr, t_token *token, t_asm *assembler)
+{
+	int ind_value;
+	
+	if (token->type == INDIRECT_LABEL)
+		ft_add_label_replace_point(token->content + 1, opr, T_IND, assembler);
+	else
+	{
+		ind_value = ft_atoi(token->content);
+		ind_value = ind_value << 16;
+		ind_value = ft_reverse_bytes(ind_value);
+		ft_memmove(&opr->byte_code[opr->pos], &ind_value, T_IND);
+	}
+	opr->pos += T_IND;
+}
+
+void	ft_check_arg(int i, t_instruction *opr, t_token *token, t_asm *assembler)
 {
 
 	if (!(opr->args[i] = ft_get_arg_type_code((token)->type)))
@@ -510,11 +571,12 @@ void	ft_check_arg(int i, int *pos, t_instruction *opr, t_token *token)
 	if (!g_op_tab[opr->byte_code[0]].types[i][opr->args[i]] || i >= g_op_tab[opr->byte_code[0]].max_params)
 		ft_asm_exit(NULL, NULL, &i, token);
 	if (opr->args[i] == REG_CODE)
-		ft_check_reg(pos, opr, token);
-	/* else if (opr->args[i] == DIR_CODE)
-		ft_check_dir(pos, opr, token);
+		ft_check_reg(opr, token);
+	else if (opr->args[i] == DIR_CODE)
+		ft_check_dir(opr, token, assembler);
 	else
-		ft_check_ind(pos, opr, token); */
+		ft_check_ind(opr, token, assembler);
+	ft_print_memory(opr->byte_code, 32);
 }
 
 /*
@@ -523,26 +585,23 @@ void	ft_check_arg(int i, int *pos, t_instruction *opr, t_token *token)
 
 void ft_skip_args(int op, t_token **token, t_asm *assembler)
 {
-	int pos;
 	int i;
 	t_instruction	opr;
 
 	i = 0;
-	pos = 0;
 	ft_bzero(&opr, sizeof(opr));
-	opr.byte_code[pos] = op;
-	pos += 1 + g_op_tab[op].acb;
-	opr.g_pos = assembler->pos;
+	opr.byte_code[opr.pos] = op;
+	opr.pos += 1 + g_op_tab[op].acb;
 	while ((*token)->type != NEW_LINE)
 	{
-		ft_check_arg(i, &pos, &opr, *token);
+		ft_check_arg(i, &opr, *token, assembler);
 		i++;
 		*token = (*token)->next->type == SEPARATOR ?
 		(*token)->next->next : (*token)->next;
 	}
 	if (i == 0)
 		ft_asm_exit(NULL, NULL, NULL, *token);
-	assembler->pos += pos;
+	assembler->pos += opr.pos;
 	*token = (*token)->next;
 }
 
