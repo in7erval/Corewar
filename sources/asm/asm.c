@@ -340,7 +340,7 @@ char *ft_get_token_name(int index, int upercase)
 }
 
 /*
-**
+**	todo: print to sterr, Invalid parameter istruction fix
 */
 
 void ft_asm_exit(char *str, int pos[2], int *i, t_token *token)
@@ -446,7 +446,7 @@ void ft_skip_labels(t_token **token, t_asm *assembler)
 		label_content->pos = assembler->pos;
 		if (!(new_label_node = ft_lstnew(label_content, sizeof(*label_content))))
 			ft_asm_exit(NULL, NULL, NULL, NULL);
-		ft_lstadd(&assembler->labels, new_label_node);
+		ft_lstadd_back(&assembler->labels, new_label_node);
 		*token = (*token)->next->type == NEW_LINE ? (*token)->next->next : (*token)->next;
 	}
 }
@@ -521,11 +521,11 @@ void ft_add_label_replace_point(char *label, t_instruction *opr, int size, t_asm
 		new_point_content->size = size;
 		if (!(new_point = ft_lstnew(new_point_content, sizeof(*new_point_content))))
 			ft_asm_exit(NULL, NULL, NULL, NULL);
-		ft_lstadd(&assembler->labels_replace_list, new_point);
+		ft_lstadd_back(&assembler->labels_replace_list, new_point);
 }
 
 /*
-** todo make dif size dir?
+**
 */
 
 
@@ -533,8 +533,9 @@ void ft_check_dir(t_instruction *opr, t_token *token, t_asm *assembler)
 {
 	int dir_value;
 	int t_dir_size;
-	
-	t_dir_size = opr->byte_code[0] == 10 || opr->byte_code[0] == 11 || opr->byte_code[0] == 14 ?
+
+	t_dir_size = opr->byte_code[0] == 10 || opr->byte_code[0] == 11 ||
+	opr->byte_code[0] == 14 || opr->byte_code[0] == 12 ?
 	T_DIR / 2 : T_DIR;
 	if (token->type == DIRECT_LABEL)
 		ft_add_label_replace_point(token->content + 2, opr, t_dir_size, assembler);
@@ -550,7 +551,7 @@ void ft_check_dir(t_instruction *opr, t_token *token, t_asm *assembler)
 void ft_check_ind(t_instruction *opr, t_token *token, t_asm *assembler)
 {
 	int ind_value;
-	
+
 	if (token->type == INDIRECT_LABEL)
 		ft_add_label_replace_point(token->content + 1, opr, T_IND, assembler);
 	else
@@ -579,6 +580,26 @@ void	ft_check_arg(int i, t_instruction *opr, t_token *token, t_asm *assembler)
 	ft_print_memory(opr->byte_code, 32);
 }
 
+void ft_write_acb(t_instruction *opr)
+{
+	int i;
+	unsigned char acb;
+
+	if (g_op_tab[opr->byte_code[0]].acb == 1)
+	{
+		i = 0;
+		acb = 0;
+		while (i < g_op_tab[opr->byte_code[0]].max_params)
+		{
+			acb = acb | opr->args[i];
+			acb = acb << 2;
+			ft_printf("%d\n", acb);
+			i++;
+		}
+		opr->byte_code[1] = acb;
+	}
+}
+
 /*
 **
 */
@@ -601,6 +622,9 @@ void ft_skip_args(int op, t_token **token, t_asm *assembler)
 	}
 	if (i == 0)
 		ft_asm_exit(NULL, NULL, NULL, *token);
+	ft_write_acb(&opr);
+	assembler->bytecode = realloc(assembler->bytecode, assembler->pos + opr.pos + 1);
+	ft_memmove(&assembler->bytecode[assembler->pos], opr.byte_code, opr.pos + 1);
 	assembler->pos += opr.pos;
 	*token = (*token)->next;
 }
@@ -639,6 +663,58 @@ void debug_print_labels(t_list *node)
 	label = node->content;
 	ft_printf("label = \"%s\", pos = %d\n", label->label, label->pos);
 }
+
+void debug_print_replace_list(t_list *node)
+{
+	t_label_replace *point;
+
+	point = node->content;
+	ft_printf("Point: label = \"%s\", intruction pos = %d, insert pos = %d, size = %d\n", point->label, point->opr_pos, point->insert_pos, point->size);
+}
+
+t_label	*ft_get_label(char *label_name, t_asm *assembler)
+{
+	t_list *labels;
+	t_label *label;
+	size_t len;
+
+	label = NULL;
+	labels = assembler->labels;
+
+	while (labels)
+	{
+		label = labels->content;
+		len = ft_strlen(label->label);
+		if(ft_strnequ(label->label, label_name, len - 1))
+			break ;
+		labels = labels->next;
+	}
+	return label;
+}
+
+void insert_labels_values(t_asm *assembler)
+{
+	int value;
+	t_list *points;
+	t_label_replace *point;
+	t_label *label;
+
+	points = assembler->labels_replace_list;
+	while (points)
+	{
+		point = points->content; // norm?
+		label = ft_get_label(point->label, assembler);
+		if (!label)
+			ft_asm_exit("ERROR: undefined label", NULL, NULL, NULL);
+		value = label->pos - point->opr_pos;
+		value = value << ((REG_SIZE - point->size) * 8);
+		value = ft_reverse_bytes(value);
+		ft_memmove(&assembler->bytecode[point->opr_pos + point->insert_pos], &value, point->size);
+		points = points->next;
+	}
+
+}
+
 int main(int argc, char **argv)
 {
 	int		fd;
@@ -653,7 +729,10 @@ int main(int argc, char **argv)
 	parse_file(assembler);
 	print_tokens(assembler->tokens);
 	check_syntax(assembler, assembler->tokens);
+	insert_labels_values(assembler);
 	ft_lstiter(assembler->labels, debug_print_labels);
+	ft_lstiter(assembler->labels_replace_list , debug_print_replace_list);
+	ft_print_memory(assembler->bytecode, assembler->pos);
 	return (0);
 }
 

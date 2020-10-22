@@ -59,8 +59,6 @@ typedef struct s_instruction
 {
 	int					pos;
 	unsigned char		args[3];
-	int					values[3];
-	unsigned char		acb;
 	unsigned char		byte_code[32];
 }						t_instruction;
 
