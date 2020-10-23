@@ -525,23 +525,20 @@ void ft_add_label_replace_point(char *label, t_instruction *opr, int size, t_asm
 }
 
 /*
-**
+** ß
 */
 
 
-void ft_check_dir(t_instruction *opr, t_token *token, t_asm *assembler)
+void ft_check_dir(t_instruction *opr, t_token *token, t_asm *assembler, int t_dir_size)
 {
 	int dir_value;
-	int t_dir_size;
 
-	t_dir_size = opr->byte_code[0] == 10 || opr->byte_code[0] == 11 ||
-	opr->byte_code[0] == 14 || opr->byte_code[0] == 12 || opr->byte_code[0] == 9 ?
-	T_DIR / 2 : T_DIR;
 	if (token->type == DIRECT_LABEL)
 		ft_add_label_replace_point(token->content + 2, opr, t_dir_size, assembler);
 	else
 	{
 		dir_value = ft_atoi(token->content + 1);
+		dir_value = dir_value << ((T_DIR - t_dir_size) * 8);
 		dir_value = ft_reverse_bytes(dir_value);
 		ft_memmove(&opr->byte_code[opr->pos], &dir_value, t_dir_size);
 	}
@@ -574,7 +571,7 @@ void	ft_check_arg(int i, t_instruction *opr, t_token *token, t_asm *assembler)
 	if (opr->args[i] == REG_CODE)
 		ft_check_reg(opr, token);
 	else if (opr->args[i] == DIR_CODE)
-		ft_check_dir(opr, token, assembler);
+		ft_check_dir(opr, token, assembler, g_op_tab[opr->byte_code[0]].types[i][opr->args[i]]);
 	else
 		ft_check_ind(opr, token, assembler);
 	ft_print_memory(opr->byte_code, 32);
@@ -589,7 +586,7 @@ void ft_write_acb(t_instruction *opr)
 	{
 		i = 0;
 		acb = 0;
-		while (i < g_op_tab[opr->byte_code[0]].max_params)
+		while (i < 3)
 		{
 			acb = acb | opr->args[i];
 			acb = acb << 2;
@@ -685,7 +682,7 @@ t_label	*ft_get_label(char *label_name, t_asm *assembler)
 	{
 		label = labels->content;
 		len = ft_strlen(label->label);
-		if(ft_strnequ(label->label, label_name, len - 1))
+		if(!(ft_strncmp(label->label, label_name, len - 1)))
 			break ;
 		labels = labels->next;
 	}
@@ -715,6 +712,10 @@ void insert_labels_values(t_asm *assembler)
 
 }
 
+/*
+**
+*/
+
 void write_file(t_asm *assembler, char *name)
 {
 	char *output_name;
@@ -729,6 +730,7 @@ void write_file(t_asm *assembler, char *name)
 	assembler->header.prog_size = ft_reverse_bytes(assembler->pos);
 	write(fd, &assembler->header, sizeof(assembler->header));
 	write(fd, assembler->bytecode, assembler->pos);
+	close (fd);
 }
 
 int main(int argc, char **argv)
