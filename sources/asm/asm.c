@@ -499,7 +499,6 @@ void ft_check_reg(t_instruction *opr, t_token *token)
 		ft_asm_exit(NULL, NULL, NULL, token);
 	ft_memmove(&opr->byte_code[opr->pos], &reg_value, T_REG);
 	opr->pos += T_REG;
-	//exit (1);
 }
 
 unsigned int	ft_reverse_bytes(unsigned int value)
@@ -719,17 +718,24 @@ void insert_labels_values(t_asm *assembler)
 void write_file(t_asm *assembler, char *name)
 {
 	char *output_name;
+	char *tmp;
 	int fd;
 
-	output_name = ft_strsub(name, 0, ft_strlen(name) - 2);
-	output_name = ft_strjoin(output_name, ".cor");
-	fd = open(output_name,  O_WRONLY | O_CREAT, 0644);
-	if (fd < 0)
+	if (!(output_name = ft_strsub(name, 0, ft_strlen(name) - 2)))
 		ft_asm_exit(NULL, NULL, NULL, NULL);
+	tmp = output_name;
+	if (!(output_name = ft_strjoin(output_name, ".cor")))
+		ft_asm_exit(NULL, NULL, NULL, NULL);
+	ft_strdel(&tmp);
+	if ((fd = open(output_name,  O_WRONLY | O_CREAT, 0644)) < 0)
+		ft_asm_exit(NULL, NULL, NULL, NULL);
+	ft_strdel(&output_name);
 	assembler->header.magic = ft_reverse_bytes(COREWAR_EXEC_MAGIC);
 	assembler->header.prog_size = ft_reverse_bytes(assembler->pos);
-	write(fd, &assembler->header, sizeof(assembler->header));
-	write(fd, assembler->bytecode, assembler->pos);
+	if (write(fd, &assembler->header, sizeof(assembler->header)) < 0)
+		ft_asm_exit(NULL, NULL, NULL, NULL);
+	if (write(fd, assembler->bytecode, assembler->pos) < 0)
+		ft_asm_exit(NULL, NULL, NULL, NULL);
 	close (fd);
 }
 
