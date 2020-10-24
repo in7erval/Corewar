@@ -1,26 +1,25 @@
 
-# include "asm.h"
+#include "asm.h"
 
-t_op	g_op_tab[17] =
-{
-	{0,	0, {{0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}}, 0, 0},
-	{"live", 1, {{0, 0, T_DIR, 0}}, 1, 0},
-	{"ld", 2, {{0,0, T_DIR, T_IND}, {0, T_REG, 0, 0}}, 2, 1},
-	{"st", 2, {{0, T_REG, 0, 0}, {0, T_REG, 0, T_IND}}, 3, 1},
-	{"add", 3, {{0, T_REG}, {0, T_REG}, {0, T_REG}}, 4, 1},
-	{"sub", 3, {{T_REG, T_REG, T_REG}}, 5, 1},
-	{"and", 3, {{0, T_REG, T_DIR, T_IND}, {0, T_REG, T_DIR, T_IND}, {0, T_REG}}, 6, 1},
-	{"or", 3,  {{0, T_REG, T_DIR, T_IND}, {0, T_REG, T_DIR, T_IND}}, 7, 1},
-	{"xor", 3, {{0, T_REG, T_DIR, T_IND}, {0, T_REG, T_DIR, T_IND}}, 8, 1},
-	{"zjmp", 1, {{0, 0, T_DIR / 2}}, 9, 0},
-	{"ldi", 3, {{0, T_REG, T_DIR / 2, T_IND}, { 0, T_REG, T_DIR / 2}, {0, T_REG}}, 10, 1},
-	{"sti", 3, {{0, T_REG}, {0, T_REG, T_DIR / 2, T_IND}, {0, T_REG, T_DIR / 2}}, 11, 1},
-	{"fork", 1, {{0, 0, T_DIR / 2}}, 12, 0},
-	{"lld", 2, {{0, 0, T_DIR, T_IND}, {0, T_REG}}, 13, 1},
-	{"lldi", 3, {{0, T_REG, T_DIR / 2, T_IND}, {0, T_REG, T_DIR / 2}, {0, T_REG}}, 14, 1},
-	{"lfork", 1, {{0, 0, T_DIR}}, 15, 0},
-	{"aff", 1, {{0, T_REG}}, 16, 1}
-};
+t_op g_op_tab[17] =
+	{
+		{0, 0, {{0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}}, 0, 0},
+		{"live", 1, {{0, 0, T_DIR, 0}}, 1, 0},
+		{"ld", 2, {{0, 0, T_DIR, T_IND}, {0, T_REG, 0, 0}}, 2, 1},
+		{"st", 2, {{0, T_REG, 0, 0}, {0, T_REG, 0, T_IND}}, 3, 1},
+		{"add", 3, {{0, T_REG}, {0, T_REG}, {0, T_REG}}, 4, 1},
+		{"sub", 3, {{T_REG, T_REG, T_REG}}, 5, 1},
+		{"and", 3, {{0, T_REG, T_DIR, T_IND}, {0, T_REG, T_DIR, T_IND}, {0, T_REG}}, 6, 1},
+		{"or", 3, {{0, T_REG, T_DIR, T_IND}, {0, T_REG, T_DIR, T_IND}}, 7, 1},
+		{"xor", 3, {{0, T_REG, T_DIR, T_IND}, {0, T_REG, T_DIR, T_IND}}, 8, 1},
+		{"zjmp", 1, {{0, 0, T_DIR / 2}}, 9, 0},
+		{"ldi", 3, {{0, T_REG, T_DIR / 2, T_IND}, {0, T_REG, T_DIR / 2}, {0, T_REG}}, 10, 1},
+		{"sti", 3, {{0, T_REG}, {0, T_REG, T_DIR / 2, T_IND}, {0, T_REG, T_DIR / 2}}, 11, 1},
+		{"fork", 1, {{0, 0, T_DIR / 2}}, 12, 0},
+		{"lld", 2, {{0, 0, T_DIR, T_IND}, {0, T_REG}}, 13, 1},
+		{"lldi", 3, {{0, T_REG, T_DIR / 2, T_IND}, {0, T_REG, T_DIR / 2}, {0, T_REG}}, 14, 1},
+		{"lfork", 1, {{0, 0, T_DIR}}, 15, 0},
+		{"aff", 1, {{0, T_REG}}, 16, 1}};
 
 void print_usage(void)
 {
@@ -28,7 +27,7 @@ void print_usage(void)
 	exit(0);
 }
 
-t_asm	*init_asm(int fd)
+t_asm *init_asm(int fd)
 {
 	t_asm *assembler;
 
@@ -39,9 +38,9 @@ t_asm	*init_asm(int fd)
 	return (assembler);
 }
 
-t_token		*new_token(t_asm *assembler, int type)
+t_token *new_token(t_asm *assembler, int type)
 {
-	t_token	*token;
+	t_token *token;
 
 	token = (t_token *)malloc(sizeof(t_token)); //todo:free
 	if (!token)
@@ -63,12 +62,12 @@ t_token		*new_token(t_asm *assembler, int type)
 	return (token);
 }
 
-void 	add_token(t_token **head, t_token *token)
+void add_token(t_token **head, t_token *token)
 {
 	t_token *temp;
 
 	if (!head)
-		return ;
+		return;
 	if (*head)
 	{
 		temp = *head;
@@ -88,7 +87,7 @@ void 	add_token(t_token **head, t_token *token)
 	}
 }
 
-void 	parse_symbols(t_asm *assembler, char *row, unsigned int start, t_token *token)
+void parse_symbols(t_asm *assembler, char *row, unsigned int start, t_token *token)
 {
 	unsigned int column;
 
@@ -114,10 +113,9 @@ void 	parse_symbols(t_asm *assembler, char *row, unsigned int start, t_token *to
 	}
 	else
 		ft_asm_exit(NULL, (int[2]){assembler->row, assembler->column}, NULL, NULL);
-
 }
 
-void 	parse_number(t_asm *assembler, char *row, unsigned int start, t_token *token)
+void parse_number(t_asm *assembler, char *row, unsigned int start, t_token *token)
 {
 	unsigned int column;
 
@@ -142,7 +140,7 @@ void 	parse_number(t_asm *assembler, char *row, unsigned int start, t_token *tok
 		ft_asm_exit(NULL, (int[2]){assembler->row, assembler->column}, NULL, NULL);
 }
 
-char 	*ft_strjoin_extended(char **str1, char **str2)
+char *ft_strjoin_extended(char **str1, char **str2)
 {
 	char *result;
 
@@ -154,7 +152,7 @@ char 	*ft_strjoin_extended(char **str1, char **str2)
 	return (result);
 }
 
-void 	update_assembler_pos(t_asm *assembler, const char *str)
+void update_assembler_pos(t_asm *assembler, const char *str)
 {
 	unsigned int i;
 
@@ -173,7 +171,7 @@ void 	update_assembler_pos(t_asm *assembler, const char *str)
 	}
 }
 
-void	reinit_row(char **row, char *str)
+void reinit_row(char **row, char *str)
 {
 	char *s;
 
@@ -184,11 +182,11 @@ void	reinit_row(char **row, char *str)
 	*row = s;
 }
 
-void	parse_string(t_asm *assembler, char **row, unsigned int start, t_token *token)
+void parse_string(t_asm *assembler, char **row, unsigned int start, t_token *token)
 {
-	int		size;
-	char	*end;
-	char 	*str;
+	int size;
+	char *end;
+	char *str;
 
 	token->column = start;
 	size = 1;
@@ -208,7 +206,7 @@ void	parse_string(t_asm *assembler, char **row, unsigned int start, t_token *tok
 	add_token(&(assembler->tokens), token);
 }
 
-void	parse_token2(t_asm *assembler, char **row)
+void parse_token2(t_asm *assembler, char **row)
 {
 	if ((*row)[assembler->column] == DIRECT_CHAR)
 	{
@@ -217,27 +215,27 @@ void	parse_token2(t_asm *assembler, char **row)
 		{
 			assembler->column++;
 			parse_symbols(assembler, *row, assembler->column - 2,
-				new_token(assembler, DIRECT_LABEL));
+						  new_token(assembler, DIRECT_LABEL));
 		}
 		else
 			parse_number(assembler, *row, assembler->column - 1,
-				new_token(assembler, DIRECT));
+						 new_token(assembler, DIRECT));
 	}
 	else if ((*row)[assembler->column] == '\"')
 		parse_string(assembler, row, assembler->column,
-		new_token(assembler, STRING));
+					 new_token(assembler, STRING));
 	else if ((*row)[assembler->column] == LABEL_CHAR)
 	{
 		assembler->column++;
 		parse_symbols(assembler, *row, assembler->column - 1,
-		new_token(assembler, INDIRECT_LABEL));
+					  new_token(assembler, INDIRECT_LABEL));
 	}
 	else
 		parse_number(assembler, *row, assembler->column,
-			new_token(assembler, INDIRECT));
+					 new_token(assembler, INDIRECT));
 }
 
-void 	parse_token(t_asm *assembler, char **row)
+void parse_token(t_asm *assembler, char **row)
 {
 	if ((*row)[assembler->column] == SEPARATOR_CHAR)
 	{
@@ -251,16 +249,15 @@ void 	parse_token(t_asm *assembler, char **row)
 	}
 	else if ((*row)[assembler->column] == '.')
 		parse_symbols(assembler, *row, assembler->column++,
-			new_token(assembler, COMMAND));
-	else 
+					  new_token(assembler, COMMAND));
+	else
 		parse_token2(assembler, row);
 }
 
-
-void 	parse_file(t_asm *assembler)
+void parse_file(t_asm *assembler)
 {
-	char	*row;
-	int 	ret;
+	char *row;
+	int ret;
 
 	while ((ret = read_row(assembler->fd, &row)) > 0)
 	{
@@ -280,7 +277,6 @@ void 	parse_file(t_asm *assembler)
 	add_token(&(assembler->tokens), new_token(assembler, END));
 }
 
-
 char *ft_get_token_name(int index, int upercase)
 {
 	char tokens[35][15];
@@ -293,11 +289,11 @@ char *ft_get_token_name(int index, int upercase)
 	ft_strcpy(tokens[0x14], "instruction");
 	ft_strcpy(tokens[0x15], "register");
 	ft_strcpy(tokens[0x16], "direct");
- 	ft_strcpy(tokens[0x17], "direct_label");
+	ft_strcpy(tokens[0x17], "direct_label");
 	ft_strcpy(tokens[0x18], "indirect");
- 	ft_strcpy(tokens[0x19], "indirect_label");
- 	ft_strcpy(tokens[0x20], "separator");
- 	ft_strcpy(tokens[0x21], "new_line");
+	ft_strcpy(tokens[0x19], "indirect_label");
+	ft_strcpy(tokens[0x20], "separator");
+	ft_strcpy(tokens[0x21], "new_line");
 	ft_strcpy(tokens[0x22], "end");
 	if (!(name = ft_strdup(tokens[index])))
 		ft_asm_exit(NULL, NULL, NULL, NULL);
@@ -313,14 +309,15 @@ void ft_invalid_label_exit(t_token *token)
 
 	if (token->type == DIRECT_LABEL)
 		label_name = token->content + 2;
-	else 
+	else
 		label_name = token->content + 1;
 	token_name = ft_get_token_name(token->type, 1);
 	ft_printe("No such label %s while attempting to dereference token \
-[TOKEN][%.3d:%.3d] %s \"%s\"\n", label_name, token->row,
-		token->column + 1, token_name, token->content);
+[TOKEN][%.3d:%.3d] %s \"%s\"\n",
+			  label_name, token->row,
+			  token->column + 1, token_name, token->content);
 	ft_strdel(&token_name);
-	exit (1);
+	exit(1);
 }
 
 void ft_asm_exit(char *str, int pos[2], int *i, t_token *token)
@@ -331,14 +328,14 @@ void ft_asm_exit(char *str, int pos[2], int *i, t_token *token)
 	{
 		token_name = ft_get_token_name(token->type, 0);
 		ft_printe("Invalid parameter %d type %s for instruction %s\n",
-		*i, token_name, str);
+				  *i, token_name, str);
 		ft_strdel(&token_name);
 	}
 	else if (token)
 	{
 		token_name = ft_get_token_name(token->type, 1);
 		ft_printe("Syntax error at token [TOKEN][%.3d:%.3d] %s \"%s\"\n",
-		token->row, token->column + 1, token_name, token->content);
+				  token->row, token->column + 1, token_name, token->content);
 		ft_strdel(&token_name);
 	}
 	else if (pos)
@@ -347,7 +344,7 @@ void ft_asm_exit(char *str, int pos[2], int *i, t_token *token)
 		ft_printe("%s\n", str);
 	else
 		perror("ERROR");
-	exit (1);
+	exit(1);
 }
 
 void ft_skip_name(t_token **token, t_asm *assembler, int *heat)
@@ -356,11 +353,11 @@ void ft_skip_name(t_token **token, t_asm *assembler, int *heat)
 	if (ft_strlen((*token)->content) - 2 > PROG_NAME_LENGTH)
 	{
 		ft_printe("Champion name too long (Max length %d)\n",
-		PROG_NAME_LENGTH);
-		exit (1);
+				  PROG_NAME_LENGTH);
+		exit(1);
 	}
 	ft_memmove(assembler->header.prog_name, (*token)->content + 1,
-	ft_strlen((*token)->content) - 2);
+			   ft_strlen((*token)->content) - 2);
 	*token = (*token)->next;
 	if ((*token)->type != NEW_LINE)
 		ft_asm_exit(NULL, NULL, NULL, *token);
@@ -374,17 +371,16 @@ void ft_skip_comment(t_token **token, t_asm *assembler, int *heat)
 	if (ft_strlen((*token)->content) - 2 > COMMENT_LENGTH)
 	{
 		ft_printe("Champion comment too long (Max length %d)\n",
-		COMMENT_LENGTH);
-		exit (1);
+				  COMMENT_LENGTH);
+		exit(1);
 	}
 	ft_memmove(assembler->header.comment, (*token)->content + 1,
-	ft_strlen((*token)->content) - 2);
+			   ft_strlen((*token)->content) - 2);
 	*token = (*token)->next;
 	if ((*token)->type != NEW_LINE)
 		ft_asm_exit(NULL, NULL, NULL, *token);
 	*token = (*token)->next;
 	*heat = *heat | 2;
-
 }
 
 int ft_get_op_code(const char *name)
@@ -415,10 +411,10 @@ void ft_skip_name_or_comment(t_token **token, t_asm *assembler, int *heat)
 
 void ft_skip_labels(t_token **token, t_asm *assembler)
 {
-	t_list	*new_label_node;
-	t_label	*label_content;
+	t_list *new_label_node;
+	t_label *label_content;
 
-	while((*token)->type == LABEL)
+	while ((*token)->type == LABEL)
 	{
 		if (!(label_content = (t_label *)ft_memalloc(sizeof(*label_content))))
 			ft_asm_exit(NULL, NULL, NULL, NULL);
@@ -453,16 +449,16 @@ void ft_check_reg(t_instruction *opr, t_token *token)
 	opr->pos += T_REG;
 }
 
-unsigned int	ft_reverse_bytes(unsigned int value)
+unsigned int ft_reverse_bytes(unsigned int value)
 {
 	return (value & 0x000000FFU) << 24 | (value & 0x0000FF00U) << 8 |
-	(value & 0x00FF0000U) >> 8 | (value & 0xFF000000U) >> 24;
+		   (value & 0x00FF0000U) >> 8 | (value & 0xFF000000U) >> 24;
 }
 
 void ft_add_label_replace_point(t_token *token, t_instruction *opr, int size, t_asm *assembler)
 {
-	t_list	*new_point;
-	t_label_replace	*new_point_content;
+	t_list *new_point;
+	t_label_replace *new_point_content;
 
 	if (!(new_point_content = (t_label_replace *)ft_memalloc(sizeof(*new_point_content))))
 		ft_asm_exit(NULL, NULL, NULL, NULL);
@@ -476,13 +472,13 @@ void ft_add_label_replace_point(t_token *token, t_instruction *opr, int size, t_
 }
 
 void ft_check_dir(t_instruction *opr, t_token *token,
-	t_asm *assembler, int t_dir_size)
+				  t_asm *assembler, int t_dir_size)
 {
 	int dir_value;
 
 	if (token->type == DIRECT_LABEL)
 		ft_add_label_replace_point(token,
-			opr, t_dir_size, assembler);
+								   opr, t_dir_size, assembler);
 	else
 	{
 		dir_value = ft_atoi(token->content + 1);
@@ -509,7 +505,7 @@ void ft_check_ind(t_instruction *opr, t_token *token, t_asm *assembler)
 	opr->pos += T_IND;
 }
 
-void	ft_check_arg(int i, t_instruction *opr, t_token *token, t_asm *assembler)
+void ft_check_arg(int i, t_instruction *opr, t_token *token, t_asm *assembler)
 {
 
 	if (!(opr->args[i] = ft_get_arg_type_code((token)->type)))
@@ -521,7 +517,7 @@ void	ft_check_arg(int i, t_instruction *opr, t_token *token, t_asm *assembler)
 		ft_check_reg(opr, token);
 	else if (opr->args[i] == DIR_CODE)
 		ft_check_dir(opr, token, assembler,
-			g_op_tab[opr->byte_code[0]].types[i][opr->args[i]]);
+					 g_op_tab[opr->byte_code[0]].types[i][opr->args[i]]);
 	else
 		ft_check_ind(opr, token, assembler);
 }
@@ -552,7 +548,7 @@ void ft_write_acb(t_instruction *opr)
 void ft_skip_args(int op, t_token **token, t_asm *assembler)
 {
 	int i;
-	t_instruction	opr;
+	t_instruction opr;
 
 	i = 0;
 	ft_bzero(&opr, sizeof(opr));
@@ -562,17 +558,16 @@ void ft_skip_args(int op, t_token **token, t_asm *assembler)
 	{
 		ft_check_arg(i, &opr, *token, assembler);
 		i++;
-		*token = (*token)->next->type == SEPARATOR ?
-		(*token)->next->next : (*token)->next;
+		*token = (*token)->next->type == SEPARATOR ? (*token)->next->next : (*token)->next;
 	}
 	if (i == 0)
 		ft_asm_exit(NULL, NULL, NULL, *token);
 	ft_write_acb(&opr);
-	if(!(assembler->bytecode = realloc(assembler->bytecode,
-		assembler->pos + opr.pos + 1)))
+	if (!(assembler->bytecode = realloc(assembler->bytecode,
+										assembler->pos + opr.pos + 1)))
 		ft_asm_exit(NULL, NULL, NULL, NULL);
 	ft_memmove(&assembler->bytecode[assembler->pos],
-		opr.byte_code, opr.pos + 1);
+			   opr.byte_code, opr.pos + 1);
 	assembler->pos += opr.pos;
 	*token = (*token)->next;
 }
@@ -605,7 +600,7 @@ void check_syntax(t_asm *assembler, t_token *tokens)
 	}
 }
 
-t_label	*ft_get_label(t_token *token, t_asm *assembler)
+t_label *ft_get_label(t_token *token, t_asm *assembler)
 {
 	t_list *labels;
 	t_label *label;
@@ -621,14 +616,14 @@ t_label	*ft_get_label(t_token *token, t_asm *assembler)
 	{
 		label = labels->content;
 		len = ft_strlen(label->label);
-		if(!(ft_strncmp(label->label, label_name, len - 1)) && label_name[len - 1] == '\0')
-			return(label);
+		if (!(ft_strncmp(label->label, label_name, len - 1)) && label_name[len - 1] == '\0')
+			return (label);
 		labels = labels->next;
 	}
 	return (NULL);
 }
 
-void	insert_labels_values(t_asm *assembler)
+void insert_labels_values(t_asm *assembler)
 {
 	int value;
 	t_list *points;
@@ -646,12 +641,12 @@ void	insert_labels_values(t_asm *assembler)
 		value = value << ((REG_SIZE - point->size) * 8);
 		value = ft_reverse_bytes(value);
 		ft_memmove(&assembler->bytecode[point->opr_pos + point->insert_pos],
-		&value, point->size);
+				   &value, point->size);
 		points = points->next;
 	}
 }
 
-void	write_file(t_asm *assembler, char *name)
+void write_file(t_asm *assembler, char *name)
 {
 	char *output_name;
 	char *tmp;
@@ -663,9 +658,9 @@ void	write_file(t_asm *assembler, char *name)
 	if (!(output_name = ft_strjoin(output_name, ".cor")))
 		ft_asm_exit(NULL, NULL, NULL, NULL);
 	ft_strdel(&tmp);
-	if ((fd = open(output_name,  O_WRONLY | O_CREAT, 0644)) < 0)
+	if ((fd = open(output_name, O_WRONLY | O_CREAT, 0644)) < 0)
 		ft_asm_exit(NULL, NULL, NULL, NULL);
-	ft_printf("Writing output program to %s\n", output_name); 
+	ft_printf("Writing output program to %s\n", output_name);
 	ft_strdel(&output_name);
 	assembler->header.magic = ft_reverse_bytes(COREWAR_EXEC_MAGIC);
 	assembler->header.prog_size = ft_reverse_bytes(assembler->pos);
@@ -673,23 +668,49 @@ void	write_file(t_asm *assembler, char *name)
 		ft_asm_exit(NULL, NULL, NULL, NULL);
 	if (write(fd, assembler->bytecode, assembler->pos) < 0)
 		ft_asm_exit(NULL, NULL, NULL, NULL);
-	close (fd);
+	close(fd);
+}
+
+void	del(void *memory, size_t size)
+{
+	ft_bzero(memory, size);
+	ft_memdel(&memory);
+}
+
+void ft_del_tokens(t_token **tokens)
+{
+	if (!*tokens)
+		return;
+	if ((*tokens)->next)
+		ft_del_tokens(&(*tokens)->next);
+	ft_strdel(&(*tokens)->content);
+	ft_memdel((void**)tokens);
+}
+
+void clean_memory(t_asm *assembler)
+{
+	ft_lstdel(&assembler->labels, del);
+	ft_lstdel(&assembler->labels_replace_list, del);
+	ft_del_tokens(&assembler->tokens);
+	free(assembler->bytecode);
+	free(assembler);
 }
 
 int main(int argc, char **argv)
 {
-	int		fd;
-	t_asm	*assembler;
+	int fd;
+	t_asm *assembler;
 
 	if (argc != 2)
 		print_usage();
 	fd = open(argv[1], O_RDONLY);
 	if (fd <= 0)
-		ft_asm_exit(NULL, NULL, NULL, NULL); 
+		ft_asm_exit(NULL, NULL, NULL, NULL);
 	assembler = init_asm(fd);
 	parse_file(assembler);
 	check_syntax(assembler, assembler->tokens);
 	insert_labels_values(assembler);
 	write_file(assembler, argv[1]);
+	clean_memory(assembler);
 	return (0);
 }
