@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: ffood <ffood@student.42.fr>                +#+  +:+       +#+         #
+#    By: majosue <majosue@student.42.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2019/09/06 18:03:43 by htrent            #+#    #+#              #
-#    Updated: 2020/02/24 17:12:55 by ffood            ###   ########.fr        #
+#    Updated: 2020/10/24 14:54:46 by majosue          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -16,7 +16,7 @@ NAME = libft.a
 
 FLAGS = -Wall -Werror -Wextra -c -g -O2
 
-HEADERS_LIST = libft.h ft_printf.h
+HEADERS_LIST = libft.h ft_printf.h ft_printe.h
 HEADERS_DIRECTORY = ./includes/
 HEADERS = $(addprefix $(HEADERS_DIRECTORY), $(HEADERS_LIST))
 
@@ -124,12 +124,46 @@ SOURCES_LIST = ft_atoi.c \
     ft_printf/put_u.c \
     ft_printf/put_x.c \
     ft_printf/utils.c \
-    ft_printf/width_prec_size.c
+    ft_printf/width_prec_size.c \
+    ft_printe/ft_printe.c \
+    ft_printe/ft_lstp2back.c \
+    ft_printe/ft_readformat.c \
+    ft_printe/ft_chkflags.c \
+    ft_printe/ft_gettab.c \
+    ft_printe/ft_get_f.c \
+    ft_printe/ft_add_left.c \
+    ft_printe/ft_add_right.c \
+    ft_printe/ft_null.c \
+    ft_printe/ft_space.c \
+    ft_printe/ft_minus.c \
+    ft_printe/ft_plus.c \
+    ft_printe/ft_skipflags.c \
+    ft_printe/ft_width.c \
+    ft_printe/ft_prec.c \
+    ft_printe/ft_char.c \
+    ft_printe/ft_fmt_char.c \
+    ft_printe/ft_string.c \
+    ft_printe/ft_fmt_plus.c \
+    ft_printe/ft_itoa_base.c \
+    ft_printe/ft_itoa_base_u.c \
+    ft_printe/ft_get_size.c \
+    ft_printe/ft_get_size_u.c \
+    ft_printe/ft_sharp.c \
+    ft_printe/ft_fmt_width.c \
+    ft_printe/ft_fmt_prec.c \
+    ft_printe/ft_number.c \
+    ft_printe/ft_number_o.c \
+    ft_printe/ft_number_x.c \
+    ft_printe/ft_number_u.c \
+    ft_printe/ft_ftoa.c \
+    ft_printe/ft_float.c \
+    ft_printe/ft_lstnew2.c \
 
 SOURCES = $(addprefix $(SOURCES_DIRECTORY), $(SOURCES_LIST))
 
 OBJECTS_DIRECTORY = objects/
 OBJECTS_DIRECTORY_PRINTF = objects/ft_printf
+OBJECTS_DIRECTORY_PRINTE = objects/ft_printe
 OBJECTS_LIST = $(patsubst %.c, %.o, $(SOURCES_LIST))
 OBJECTS	= $(addprefix $(OBJECTS_DIRECTORY), $(OBJECTS_LIST))
 
@@ -165,6 +199,7 @@ $(NAME): $(OBJECTS_DIRECTORY) $(OBJECTS)
 $(OBJECTS_DIRECTORY):
 	@mkdir -p $(OBJECTS_DIRECTORY)
 	@mkdir -p $(OBJECTS_DIRECTORY_PRINTF)
+	@mkdir -p $(OBJECTS_DIRECTORY_PRINTE)
 	@echo "$(BOLD_YELLOW)$(NAME)$(RESET): $(GREEN)$(OBJECTS_DIRECTORY) was created$(RESET)"
 
 $(OBJECTS_DIRECTORY)%.o : $(SOURCES_DIRECTORY)%.c $(HEADERS)

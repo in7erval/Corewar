@@ -4,6 +4,7 @@
 
 # include "libft.h"
 # include "ft_printf.h"
+# include "ft_printe.h"
 # include "op.h"
 
 # define COMMAND		0x11
@@ -49,7 +50,7 @@ typedef struct			s_label
 
 typedef struct			s_rlabel_replace
 {
-	char				*label;
+	t_token				*token;
 	int					opr_pos;
 	int					insert_pos;
 	int					size;
