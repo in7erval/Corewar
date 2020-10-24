@@ -6,7 +6,7 @@
 /*   By: majosue <majosue@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/12/04 17:37:59 by majosue           #+#    #+#             */
-/*   Updated: 2020/10/24 14:02:58 by majosue          ###   ########.fr       */
+/*   Updated: 2020/10/24 20:52:17 by majosue          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -92,7 +92,7 @@ int	ft_fmt_prec_d(t_list **str, char *s)
 	}
 	if (p <= (*str)->content_size)
 		return (1);
-	if (!(newstr = ft_memalloc(p)))
+	if (!(newstr = ft_strnew(p)))
 		return (0);
 	ft_add_left(str, &newstr, p, '0');
 	free((*str)->content);
