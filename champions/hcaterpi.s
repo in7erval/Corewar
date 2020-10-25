@@ -2,8 +2,7 @@
 .comment "All rights reserved"
 				
 				and r3, %8, r10
-				zjmp %:start
-harvesting:		zjmp %-400
+harvesting:		zjmp %:start
 f_field:		ld %-403, r2
 				ld %4, r3
 				ld %108, r4
@@ -25,6 +24,8 @@ f_sowing:		live %0
 				and r3, %8, r10
 				zjmp %:harvesting
 start:			fork %:s_field
+				ld %168427120, r16
+				st r16, -127
 				ld %1, r16
 				st r1, 26
 				st r1, 26
@@ -41,7 +42,24 @@ start:			fork %:s_field
 				ld -27, r13
 				ld -28, r14
 				ld -29, r15
-				fork %:f_field
+				and r3, %8, r10
+				zjmp %:continue
+f_hirelings:	st r1, 6
+				live %0
+				fork %:s_hirelings
+				st r1, 6
+f_hire:			live %0
+				fork %:harvesting
+				ld %4, r3
+				and r3, %8, r10
+				zjmp %:f_hire
+s_hirelings:	st r1, 14
+s_hire:			live %0
+				fork %:s_field
+				ld %4, r3
+				and r3, %8, r10
+				zjmp %:s_hire
+continue:		fork %:f_field
 				ld %0, r2
 				ld %4, r3
 				ld %108, r4
@@ -64,4 +82,4 @@ s_sowing:		live %0
 s_field:		ld %654960, r5
 				sti r5, %:s_field, %399
 				and r3, %8, r10
-				zjmp %:s_field
+				zjmp %:f_hirelings
