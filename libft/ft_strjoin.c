@@ -18,17 +18,18 @@ char	*ft_strjoin(char const *s1, char const *s2)
 	char const	*buf;
 	char		*ret;
 
-	if (!s1 || !s2)
+	if (!s1 && !s2)
 		return (NULL);
 	str = ft_strnew(ft_strlen(s1) + ft_strlen(s2));
 	if (str == NULL)
 		return (NULL);
 	ret = str;
 	buf = s1;
-	while (*buf)
+	while (buf && *buf)
 		*(str++) = *(buf++);
 	buf = s2;
-	while (*buf)
+	while (buf && *buf)
 		*(str++) = *(buf++);
+	*str = '\0';
 	return (ret);
 }
