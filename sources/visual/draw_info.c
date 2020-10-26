@@ -12,9 +12,13 @@ void 	draw_addition_info(t_arena *arena)
 	mvprintw(28, x, "%-32s %d", "CYCLE_TO_DYE:", arena->cycles_to_die);
 	mvprintw(30, x,	"%-32s %d", "CYCLE_DELTA:", CYCLE_DELTA);
 	mvprintw(32, x,	"%-32s %.4d/%d","Lives:", arena->live_nbr, NBR_LIVE);
-	mvprintw(34, x,	"%-32s %.2d/%d", "Checks:",arena->checks_nbr, MAX_CHECKS);
-	mvprintw(36, x,	"%-32s %d", "Cycles_to_checks:", (arena->cycles_to_die > 0) ?
-			arena->cycles_to_die - arena->after_check : 0);
+	mvprintw(34, x,	"%-32s %.2d/%d", "Checks:",arena->checks_nbr > 0 ?
+		arena->checks_nbr - 1 : 0, MAX_CHECKS);
+	mvprintw(36, x,	"%-32s %d", "Cycles_to_checks:", (arena->cycles_to_die > 0)
+					? arena->cycles_to_die - arena->after_check : 0);
+	if (arena->visual->has_aff)
+		mvprintw(38, x, "%-32s (%d)%c", "Aff:", arena->visual->aff,
+		   arena->visual->aff);
 }
 
 void 	draw_players_info(t_arena *arena, int y, int x)
@@ -56,7 +60,7 @@ void 	draw_winner(t_arena *arena)
 	player = ft_get_player(arena, arena->live_id);
 	if (player)
 	{
-		mvprintw(38, CORE_WIDTH + 1 + 2, "Contestant %d, \"", arena->live_id);
+		mvprintw(40, CORE_WIDTH + 1 + 2, "Contestant %d, \"", arena->live_id);
 		attron(g_colors[player->nbr]);
 		printw("%.22s", player->header.prog_name);
 		attroff(g_colors[player->nbr]);
@@ -84,8 +88,6 @@ void	draw_info(t_arena *arena)
 	draw_players_info(arena, y + 8, x);
 	draw_addition_info(arena);
 	draw_help();
-	if (arena->visual->has_aff)
-		draw_aff(arena->visual->aff);
 	if (!arena->carriages_nbr)
 		draw_winner(arena);
 	attroff(A_BOLD);
