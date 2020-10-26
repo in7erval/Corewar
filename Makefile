@@ -26,7 +26,15 @@ ASM_SOURCES_DIRECTORY = $(SOURCES_DIRECTORY)asm/
 ASM_SOURCES_LIST = asm.c \
 					read_row.c \
 					is.c \
-					skip.c
+					skip.c \
+					asm_free_tools.c \
+					ft_skip_name_or_comment.c \
+					init.c \
+					ft_check_arg.c \
+					labels.c \
+					syntax.c \
+					token.c \
+					token2.c
 
 COREWAR_SOURCES_DIRECTORY = $(SOURCES_DIRECTORY)corewar/
 COREWAR_SOURCES_LIST = main.c \

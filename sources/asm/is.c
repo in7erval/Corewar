@@ -1,21 +1,30 @@
-//
-// Created by Дмитрий Юдаков on 16.10.2020.
-//
-# include "asm.h"
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   is.c                                               :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: majosue <majosue@student.42.fr>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2020/10/26 03:45:53 by htrent            #+#    #+#             */
+/*   Updated: 2020/10/26 05:12:39 by majosue          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
-int 	is_whitespace(char c)
+#include "asm.h"
+
+int	is_whitespace(char c)
 {
 	return (c == '\t' || c == ' ' || c == '\v' || c == '\f' || c == '\r');
 }
 
-int		is_delimiter(char c)
+int	is_delimiter(char c)
 {
 	return (c == '\n' || c == '\"' || c == 0 || is_whitespace(c)
 			|| c == COMMENT_CHAR || c == '.' || c == SEPARATOR_CHAR
 			|| c == DIRECT_CHAR);
 }
 
-int		is_register(const char *str)
+int	is_register(const char *str)
 {
 	int i;
 	int len;

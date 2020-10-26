@@ -1,26 +1,30 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   skip.c                                             :+:      :+:    :+:   */
+/*   init.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: majosue <majosue@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2020/10/26 05:02:30 by htrent            #+#    #+#             */
-/*   Updated: 2020/10/26 05:03:42 by majosue          ###   ########.fr       */
+/*   Created: 2020/10/26 03:15:33 by majosue           #+#    #+#             */
+/*   Updated: 2020/10/26 05:13:50 by majosue          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "asm.h"
 
-void	skip_whitespaces(t_asm *assembler, const char *row)
+void	print_usage(void)
 {
-	while (is_whitespace(row[assembler->column]))
-		assembler->column++;
+	ft_printf("Usage: vm_champs/asm <sourcefile.s>\n");
+	exit(0);
 }
 
-void	skip_comment(t_asm *assembler, const char *row)
+t_asm	*init_asm(int fd)
 {
-	if (row[assembler->column] == COMMENT_CHAR)
-		while (row[assembler->column] != '\n')
-			assembler->column++;
+	t_asm *assembler;
+
+	assembler = (t_asm *)ft_memalloc(sizeof(t_asm));
+	if (!assembler)
+		ft_asm_exit(NULL, NULL, NULL, NULL);
+	assembler->fd = fd;
+	return (assembler);
 }
