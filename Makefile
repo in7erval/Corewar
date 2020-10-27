@@ -12,8 +12,8 @@ LIBFT = $(LIBFT_DIRECTORY)libft.a
 LIBFT_DIRECTORY = ./libft/
 LIBFT_HEADERS = $(LIBFT_DIRECTORY)includes/
 
-HEADERS_LIST = corewar.h corewar_vs.h
-HEADERS_LIST_ASM = asm.h
+HEADERS_LIST = corewar.h corewar_vs.h op.h
+HEADERS_LIST_ASM = asm.h op.h
 HEADERS_DIRECTORY = ./includes/
 HEADERS = $(addprefix $(HEADERS_DIRECTORY), $(HEADERS_LIST))
 HEADERS_ASM = $(addprefix $(HEADERS_DIRECTORY), $(HEADERS_LIST_ASM))
