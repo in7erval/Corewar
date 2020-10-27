@@ -44,6 +44,7 @@ typedef struct			s_arena
 	int					live_id;
 	int					checks_nbr;
 	unsigned char		verbose;
+	int					legacy;
 	t_visual			*visual;
 	int 				v;
 	int 				after_check;

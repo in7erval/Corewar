@@ -62,6 +62,7 @@ void		ft_init_arena(t_arena *arena)
 	arena->visual = NULL;
 	arena->v = 0;
 	arena->after_check = 0;
+	arena->legacy = 1;
 	ft_bzero(arena->core, MEM_SIZE);
 }
 
@@ -74,6 +75,11 @@ void		ft_read_args(t_arena *arena, int argc, char **argv)
 	{
 		if (ft_strequ(argv[i], "-v"))
 			arena->v = 1;
+		else if (ft_strequ(argv[i], "-legacy"))
+		{
+			ft_check_next_args(i, argc, argv, 1);
+			arena->legacy = ft_atoi(argv[++i]);
+		}
 		else if (ft_strequ(argv[i], "-n"))
 		{
 			ft_check_next_args(i, argc, argv, 2);
@@ -139,15 +145,18 @@ void		ft_put_players_to_arena(t_arena *arena)
 void print_usage_and_exit(void)
 {
 	ft_printf("\
-Usage: ./corewar [-v -dump N -verbose N] [[-n N] champion1.cor] ...\n\
+Usage: ./corewar [-v -dump N -verbose N -legacy N] [[-n N] champion1.cor] ...\n\
 	-v : Visual mode (with ncurses)\n\
 	-dump N	: Dumps memory after N cycles then exits\n\
 	-verbose N : Verbosity levels, can be added together to enable several\n\
-		- 0 : Show only essentials\n\
+		- 0 : Show only essentials (default)\n\
 		- 1 : Show lives \n\
 		- 2 : Show cycles\n\
 		- 4 : Show operations (Params are NOT litteral ...)\n\
 		- 8 : Show deaths\n\
+	-legacy N : Compability with zaz corewar\n\
+		- 1 : Repeat subject corwar ld bug (default)\n\
+		- 0 : ld bug free\n\
 	-n N : Set unic champion number\n");
 	exit (0);
 }

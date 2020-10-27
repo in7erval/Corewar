@@ -133,8 +133,8 @@ void	ft_load_values(t_carriage *carriage, int args[3])
 	{
 		size = args[i] == IND_CODE || args[i] == REG_CODE ? DIR_SIZE :
 		g_params[g_op_tab[carriage->op].short_dir][args[i]];
-		size = args[i] == IND_CODE &&
-		g_op_tab[carriage->op].op_code == 0x0d ? 2 : size;
+		size = args[i] == IND_CODE && g_op_tab[carriage->op].op_code == 0x0d &&
+		carriage->arena->legacy ? 2 : size;
 		if (size < DIR_SIZE)
 		{
 			ft_memmove_circle(&buffer, carriage->params[i], carriage, size);
