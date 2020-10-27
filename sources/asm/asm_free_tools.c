@@ -48,7 +48,7 @@ void	ft_asm_exit(char *str, int pos[2], int *i, t_token *token)
 		ft_strdel(&token_name);
 	}
 	else if (pos)
-		ft_printe("Lexical error at [%d:%d]\n", pos[0], pos[1]);
+		ft_printe("Lexical error at [%d:%d]\n", pos[0], pos[1] + 1);
 	else if (str)
 		ft_printe("%s\n", str);
 	else
