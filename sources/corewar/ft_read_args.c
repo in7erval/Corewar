@@ -101,13 +101,7 @@ void		ft_read_champion(char **str, char **file, t_arena *arena)
 
 void		ft_set_dump(char *str, t_arena *arena)
 {
-	if (!arena->dump_nbr_cycles)
-	{
-		if (!(arena->dump_nbr_cycles =
-		ft_memalloc(sizeof(*(arena->dump_nbr_cycles)))))
-			ft_exit("ERROR", NULL);
-		*(arena->dump_nbr_cycles) = ft_atoi(str);
-		if (*(arena->dump_nbr_cycles) < 0)
-			ft_exit("ERROR: nbr_cycles wrong ", "");
-	}
+	arena->dump_nbr_cycles = ft_atoi(str);
+	if (arena->dump_nbr_cycles < 0)
+		ft_exit("ERROR: nbr_cycles wrong ", "");
 }

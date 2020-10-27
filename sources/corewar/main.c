@@ -51,7 +51,7 @@ void		ft_init_arena(t_arena *arena)
 	arena->carriages_nbr = 0;
 	arena->carriage_index = 0;
 	arena->carriages = NULL;
-	arena->dump_nbr_cycles = NULL;
+	arena->dump_nbr_cycles = -1;
 	arena->players = NULL;
 	arena->cycles_to_die = CYCLE_TO_DIE;
 	arena->cycle_change_cycles_to_die = 0;
@@ -142,7 +142,7 @@ void		ft_put_players_to_arena(t_arena *arena)
 	carriage->arena->carriage_index = carriage->arena->carriages_nbr;
 }
 
-void print_usage_and_exit(void)
+int print_usage(void)
 {
 	ft_printf("\
 Usage: ./corewar [-v -dump N -verbose N -legacy N] [[-n N] champion1.cor] ...\n\
@@ -158,7 +158,7 @@ Usage: ./corewar [-v -dump N -verbose N -legacy N] [[-n N] champion1.cor] ...\n\
 		- 1 : Repeat subject corwar ld bug (default)\n\
 		- 0 : ld bug free\n\
 	-n N : Set unic champion number\n");
-	exit (0);
+	return (1);
 }
 
 int			main(int argc, char **argv)
@@ -166,11 +166,11 @@ int			main(int argc, char **argv)
 	t_arena arena;
 
 	if (argc < 2)
-		print_usage_and_exit();
+		return print_usage();
 	ft_init_arena(&arena);
 	ft_read_args(&arena, argc, argv);
 	if (!arena.players)
-		print_usage_and_exit();
+		return print_usage();
 	ft_put_players_to_arena(&arena);
 	if (arena.v)
 	{

@@ -82,7 +82,7 @@ void	ft_start_game(t_arena *arena)
 	while (1)
 	{
 		if (arena->dump_nbr_cycles &&
-		*(arena->dump_nbr_cycles) == arena->nbr_cycles)
+		arena->dump_nbr_cycles == arena->nbr_cycles)
 		{
 			ft_print_memory(arena->core, MEM_SIZE);
 			break ;

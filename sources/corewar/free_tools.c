@@ -43,5 +43,4 @@ void	ft_cleanup(t_arena *arena)
 {
 	ft_lstdel(&arena->carriages, del);
 	ft_lstdel(&arena->players, del_player);
-	free(arena->dump_nbr_cycles);
 }
