@@ -47,6 +47,7 @@ typedef struct			s_arena
 	int					legacy;
 	t_visual			*visual;
 	int 				v;
+	int 				a;
 	int 				after_check;
 }						t_arena;
 
@@ -144,6 +145,8 @@ void					ft_print_op(t_carriage *carriage,
 int						ft_check_arena(t_arena *arena);
 
 void					ft_run_carriages(t_list *carriages);
-void					print_usage_and_exit(void);
-
+int						print_usage(void);;
+void					ft_init_arena(t_arena *arena);
+void					ft_put_players_to_arena(t_arena *arena);
+t_carriage				*ft_create_carriage(t_arena *arena, t_player *player);
 #endif

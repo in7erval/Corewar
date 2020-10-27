@@ -25,6 +25,7 @@ void	visualize(t_arena *arena)
 {
 	t_visual *visual;
 
+	arena->verbose = 0;
 	init_window();
 	visual = init_visual(arena);
 	init_map(arena);

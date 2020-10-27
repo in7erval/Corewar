@@ -47,7 +47,10 @@ COREWAR_SOURCES_LIST = main.c \
 					op_tools.c \
 					ft_read_args.c \
 					parser_tools.c \
-					free_tools.c
+					free_tools.c \
+					ft_read_params.c \
+					ft_put_players_to_arena.c \
+					init_and_usage.c
 
 VISUAL_SOURCES_DIRECTORY = $(SOURCES_DIRECTORY)visual/
 VISUAL_SOURCES_LIST = colors.c \

@@ -95,6 +95,5 @@ void 					place_carriage(t_arena *arena, t_carriage *carriage);
 void 					remove_carriage(t_arena *arena, t_carriage *carriage);
 void					visualize(t_arena *arena);
 void 					update_map(t_arena *arena, t_carriage *carriage, int addr, int size);
-void 					draw_aff(int c);
 int						get_attribute(t_arena *arena, t_attr *attr, size_t cycles);
 #endif

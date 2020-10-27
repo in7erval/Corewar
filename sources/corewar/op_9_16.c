@@ -145,7 +145,7 @@ int	ft_aff(t_carriage *carriage, int args[3])
 		carriage->arena->visual->aff = c;
 		carriage->arena->visual->has_aff = 1;
 	}
-	else
+	else if (carriage->arena->a)
 		ft_printf("Aff: %c\n", c);
 	ft_skip_args(carriage, args, 2);
 	return (EXIT_SUCCESS);
