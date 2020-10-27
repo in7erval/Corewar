@@ -6,7 +6,7 @@
 /*   By: majosue <majosue@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/09/08 20:32:21 by majosue           #+#    #+#             */
-/*   Updated: 2020/10/02 06:04:03 by majosue          ###   ########.fr       */
+/*   Updated: 2020/10/27 10:39:24 by majosue          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,7 +58,7 @@ void		ft_init_arena(t_arena *arena)
 	arena->live_nbr = 0;
 	arena->nbr_cycles = 0;
 	arena->checks_nbr = 0;
-	arena->verbose = 1;
+	arena->verbose = 0;
 	arena->visual = NULL;
 	arena->v = 0;
 	arena->after_check = 0;
@@ -136,24 +136,32 @@ void		ft_put_players_to_arena(t_arena *arena)
 	carriage->arena->carriage_index = carriage->arena->carriages_nbr;
 }
 
-int			main(int argc, char **argv)
+void print_usage_and_exit(void)
 {
-	t_arena arena;
-
-	if (argc < 2)
-		ft_exit("\
+	ft_printf("\
 Usage: ./corewar [-v -dump N -verbose N] [[-n N] champion1.cor] ...\n\
 	-v : Visual mode (with ncurses)\n\
 	-dump N	: Dumps memory after N cycles then exits\n\
 	-verbose N : Verbosity levels, can be added together to enable several\n\
 		- 0 : Show only essentials\n\
-		- 1 : Show lives (default)\n\
+		- 1 : Show lives \n\
 		- 2 : Show cycles\n\
 		- 4 : Show operations (Params are NOT litteral ...)\n\
 		- 8 : Show deaths\n\
-	-n N : Set unic champion number", "");
+	-n N : Set unic champion number\n");
+	exit (0);
+}
+
+int			main(int argc, char **argv)
+{
+	t_arena arena;
+
+	if (argc < 2)
+		print_usage_and_exit();
 	ft_init_arena(&arena);
 	ft_read_args(&arena, argc, argv);
+	if (!arena.players)
+		print_usage_and_exit();
 	ft_put_players_to_arena(&arena);
 	if (arena.v)
 	{

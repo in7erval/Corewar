@@ -6,7 +6,7 @@
 /*   By: majosue <majosue@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/09/30 05:08:50 by majosue           #+#    #+#             */
-/*   Updated: 2020/10/02 06:17:36 by majosue          ###   ########.fr       */
+/*   Updated: 2020/10/27 10:15:38 by majosue          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -143,5 +143,6 @@ void					ft_print_op(t_carriage *carriage,
 int						ft_check_arena(t_arena *arena);
 
 void					ft_run_carriages(t_list *carriages);
+void					print_usage_and_exit(void);
 
 #endif
