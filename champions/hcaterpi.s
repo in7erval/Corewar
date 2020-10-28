@@ -27,21 +27,15 @@ start:			fork %:s_field
 				ld %168427120, r16
 				st r16, -127
 				ld %1, r16
-				st r1, 26
-				st r1, 26
-				st r1, 26
-				st r1, 26
-				st r1, 26
+				st r1, 11
+				st r1, 11
 				live %0
 				live %0
-				live %0
-				live %0
-				live %0
-				ld -25, r11
-				ld -26, r12
-				ld -27, r13
-				ld -28, r14
-				ld -29, r15
+				ld -5, r11
+				ld -11, r12
+				ld -17, r13
+				ld -23, r14
+				ld -24, r15
 				and r3, %8, r10
 				zjmp %:continue
 f_hirelings:	st r1, 6
@@ -53,7 +47,7 @@ f_hire:			live %0
 				ld %4, r3
 				and r3, %8, r10
 				zjmp %:f_hire
-s_hirelings:	st r1, 14
+s_hirelings:	st r1, 6
 s_hire:			live %0
 				fork %:s_field
 				ld %4, r3
