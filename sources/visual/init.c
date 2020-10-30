@@ -12,7 +12,8 @@
 
 #include "corewar_vs.h"
 
-void		init_map_player(t_visual *visual, size_t offset, t_player *player)
+void		init_map_player(t_visual *visual, size_t offset, t_player *player,
+							int nbr)
 {
 	size_t	i;
 	size_t	len;
@@ -21,7 +22,8 @@ void		init_map_player(t_visual *visual, size_t offset, t_player *player)
 	i = offset;
 	while (i < len + offset)
 	{
-		visual->map[i].value = (player->nbr - 1) % MAX_PLAYERS + 1;
+		player->nbr_color = nbr;
+		visual->map[i].value = (nbr - 1) % MAX_PLAYERS + 1;
 		i++;
 	}
 }
@@ -31,14 +33,17 @@ void		init_map(t_arena *arena)
 	size_t		offset;
 	t_list		*players;
 	t_player	*player;
+	int			nbr;
 
 	offset = 0;
+	nbr = 1;
 	players = arena->players;
 	while (players)
 	{
 		player = (t_player *)players->content;
-		init_map_player(arena->visual, offset, player);
+		init_map_player(arena->visual, offset, player, nbr);
 		offset += MEM_SIZE / arena->carriages_nbr;
+		nbr++;
 		players = players->next;
 	}
 }

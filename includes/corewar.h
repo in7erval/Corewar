@@ -27,6 +27,7 @@ typedef struct			s_player
 	void				*code;
 	int					current_lives;
 	int					last_live;
+	int					nbr_color;
 }						t_player;
 
 typedef struct			s_arena

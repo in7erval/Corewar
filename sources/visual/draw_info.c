@@ -39,10 +39,10 @@ void	draw_players_info(t_arena *arena, int y, int x)
 	{
 		y += 2;
 		player = (t_player *)players->content;
-		mvprintw(y, x, "Player -%d:", player->nbr);
-		attron(g_colors[player->nbr]);
-		mvprintw(y, x + 11, "%.38s", player->header.prog_name);
-		attroff(g_colors[player->nbr]);
+		mvprintw(y, x, "Player -%d : ", player->nbr);
+		attron(g_colors[player->nbr_color]);
+		printw("%.38s", player->header.prog_name);
+		attroff(g_colors[player->nbr_color]);
 		players = players->next;
 		mvprintw(++y, x + 2, "Last live: %30d", player->last_live);
 		mvprintw(++y, x + 2, "Lives in current period: %16d",
@@ -68,9 +68,9 @@ void	draw_winner(t_arena *arena)
 	if (player)
 	{
 		mvprintw(40, CORE_WIDTH + 1 + 2, "Contestant %d, \"", arena->live_id);
-		attron(g_colors[player->nbr]);
+		attron(g_colors[player->nbr_color]);
 		printw("%.22s", player->header.prog_name);
-		attroff(g_colors[player->nbr]);
+		attroff(g_colors[player->nbr_color]);
 		printw("\", has won !");
 	}
 }
