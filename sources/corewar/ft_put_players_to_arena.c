@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   ft_put_players_to_arena.c                          :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: htrent <htrent@student.42.fr>              +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2020/10/30 15:39:48 by htrent            #+#    #+#             */
+/*   Updated: 2020/10/30 15:39:50 by htrent           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "corewar.h"
 
 t_carriage	*ft_create_carriage(t_arena *arena, t_player *player)
@@ -33,8 +45,8 @@ void		ft_put_players_to_arena(t_arena *arena)
 			ft_exit("ERROR", NULL);
 		ft_lstadd(&arena->carriages, new_carriage);
 		ft_memmove(arena->core + pc, ((t_player*)players->content)->code,
-				   ft_reverse_bytes(
-				   		((t_player*)players->content)->header.prog_size));
+					ft_reverse_bytes(
+					((t_player*)players->content)->header.prog_size));
 		pc += MEM_SIZE / arena->carriages_nbr;
 		players = players->next;
 	}

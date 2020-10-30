@@ -31,13 +31,13 @@ void	ft_mark_death_carriages(t_list *carriages)
 	}
 }
 
-void 	ft_reset_lives(t_list *players_list)
+void	ft_reset_lives(t_list *players_list)
 {
 	t_player *player;
 
 	while (players_list)
 	{
-		player = (t_player *) players_list->content;
+		player = (t_player *)players_list->content;
 		player->current_lives = 0;
 		players_list = players_list->next;
 	}

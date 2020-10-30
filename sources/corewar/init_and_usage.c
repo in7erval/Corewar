@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   init_and_usage.c                                   :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: htrent <htrent@student.42.fr>              +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2020/10/30 15:41:13 by htrent            #+#    #+#             */
+/*   Updated: 2020/10/30 15:41:17 by htrent           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "corewar.h"
 
 void		ft_init_arena(t_arena *arena)
@@ -21,7 +33,7 @@ void		ft_init_arena(t_arena *arena)
 	ft_bzero(arena->core, MEM_SIZE);
 }
 
-int print_usage(void)
+int			print_usage(void)
 {
 	ft_printf("\
 Usage: ./corewar [-a -v -dump N -verbose N -legacy N] [[-n N] champion1.cor]\

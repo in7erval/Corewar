@@ -1,2 +1,0 @@
-# Corewar
-## master branch

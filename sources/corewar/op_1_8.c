@@ -21,7 +21,6 @@ int	ft_live(t_carriage *carriage, int args[3])
 	ft_load_params(carriage, args, 1, 0);
 	ft_load_values(carriage, args);
 	id = -carriage->values[0];
-
 	if ((player = ft_get_player(carriage->arena, id)))
 	{
 		player->current_lives++;
@@ -74,13 +73,15 @@ int	ft_st(t_carriage *carriage, int args[3])
 		return (EXIT_FAILURE);
 	}
 	ft_load_params(carriage, args, 1, 1);
-	ft_memmove_circle(carriage->params[1], carriage->params[0], carriage, REG_SIZE);
+	ft_memmove_circle(carriage->params[1], carriage->params[0],
+			carriage, REG_SIZE);
 	ft_load_values(carriage, args);
 	if ((unsigned char *)carriage->params[1] - carriage->core >= 0 &&
 		(unsigned char *)carriage->params[1] - carriage->core < MEM_SIZE)
 		carriage->values[1] = carriage->ind_val[1];
 	if (carriage->arena->v)
-		update_map(carriage->arena, carriage,((unsigned char *)carriage->params[1] - carriage->core), DIR_SIZE);
+		update_map(carriage->arena, carriage,
+	((unsigned char *)carriage->params[1] - carriage->core), DIR_SIZE);
 	ft_skip_args(carriage, args, 2);
 	return (EXIT_SUCCESS);
 }

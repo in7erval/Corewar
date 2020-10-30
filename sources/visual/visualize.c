@@ -1,7 +1,18 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   visualize.c                                        :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: htrent <htrent@student.42.fr>              +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2020/10/30 15:32:02 by htrent            #+#    #+#             */
+/*   Updated: 2020/10/30 15:32:03 by htrent           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
 #include "corewar_vs.h"
 
-void 	draw(t_arena *arena)
+void	draw(t_arena *arena)
 {
 	erase();
 	draw_borders();
@@ -10,7 +21,7 @@ void 	draw(t_arena *arena)
 	refresh();
 }
 
-void 	play_cycle(t_arena *arena)
+void	play_cycle(t_arena *arena)
 {
 	if (arena->carriages_nbr)
 	{

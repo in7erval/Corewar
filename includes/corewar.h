@@ -25,8 +25,8 @@ typedef struct			s_player
 	int					nbr;
 	t_header			header;
 	void				*code;
-	int 				current_lives;
-	int 				last_live;
+	int					current_lives;
+	int					last_live;
 }						t_player;
 
 typedef struct			s_arena
@@ -46,9 +46,9 @@ typedef struct			s_arena
 	unsigned char		verbose;
 	int					legacy;
 	t_visual			*visual;
-	int 				v;
-	int 				a;
-	int 				after_check;
+	int					v;
+	int					a;
+	int					after_check;
 }						t_arena;
 
 typedef struct			s_carriage
@@ -145,8 +145,10 @@ void					ft_print_op(t_carriage *carriage,
 int						ft_check_arena(t_arena *arena);
 
 void					ft_run_carriages(t_list *carriages);
-int						print_usage(void);;
+int						print_usage(void);
 void					ft_init_arena(t_arena *arena);
 void					ft_put_players_to_arena(t_arena *arena);
 t_carriage				*ft_create_carriage(t_arena *arena, t_player *player);
+t_carriage				*duplicate_carriage(t_carriage *carriage);
+
 #endif

@@ -1,14 +1,25 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   draw_core.c                                        :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: htrent <htrent@student.42.fr>              +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2020/10/30 15:31:21 by htrent            #+#    #+#             */
+/*   Updated: 2020/10/30 15:31:22 by htrent           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
 #include "corewar_vs.h"
 
-void 	remove_carriage(t_arena *arena, t_carriage *carriage)
+void	remove_carriage(t_arena *arena, t_carriage *carriage)
 {
 	if (arena->visual->map[carriage->pc].value >= 5 &&
 		arena->visual->map[carriage->pc].value <= 9)
 		arena->visual->map[carriage->pc].value -= 5;
 }
 
-void 	place_carriage(t_arena *arena, t_carriage *carriage)
+void	place_carriage(t_arena *arena, t_carriage *carriage)
 {
 	if (arena->visual->map[carriage->pc].value >= 0 &&
 		arena->visual->map[carriage->pc].value <= MAX_PLAYERS)
@@ -33,7 +44,7 @@ void	draw_core(t_arena *arena)
 {
 	static size_t	cycles = 0;
 	size_t			i;
-	size_t 			x;
+	size_t			x;
 	size_t			y;
 	int				attr;
 

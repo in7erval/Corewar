@@ -1,7 +1,18 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   handle.c                                           :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: htrent <htrent@student.42.fr>              +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2020/10/30 15:31:38 by htrent            #+#    #+#             */
+/*   Updated: 2020/10/30 15:31:40 by htrent           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
 #include "corewar_vs.h"
 
-void 	handle_keyboard(t_arena *arena)
+void	handle_keyboard(t_arena *arena)
 {
 	if (arena->visual->button == 'd')
 		arena->visual->debug = !arena->visual->debug;

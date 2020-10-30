@@ -1,6 +1,18 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   ft_read_params.c                                   :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: htrent <htrent@student.42.fr>              +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2020/10/30 15:40:23 by htrent            #+#    #+#             */
+/*   Updated: 2020/10/30 15:40:25 by htrent           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "corewar.h"
 
-static void ft_read_args_extension(t_arena *arena, int ac, char **av, int *i)
+static void	ft_read_args_extension(t_arena *arena, int ac, char **av, int *i)
 {
 	if (ft_strequ(av[*i], "-n"))
 	{
@@ -37,8 +49,8 @@ void		ft_read_args(t_arena *arena, int argc, char **argv)
 		{
 			ft_check_next_args(i, argc, argv, 1);
 			arena->legacy = ft_atoi(argv[++i]);
-		} else
+		}
+		else
 			ft_read_args_extension(arena, argc, argv, &i);
 	}
 }
-

@@ -1,10 +1,21 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   init.c                                             :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: htrent <htrent@student.42.fr>              +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2020/10/30 15:31:44 by htrent            #+#    #+#             */
+/*   Updated: 2020/10/30 15:31:45 by htrent           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
-# include "corewar_vs.h"
+#include "corewar_vs.h"
 
-void	init_map_player(t_visual *visual, size_t offset, t_player *player)
+void		init_map_player(t_visual *visual, size_t offset, t_player *player)
 {
-	size_t i;
-	size_t len;
+	size_t	i;
+	size_t	len;
 
 	len = ft_reverse_bytes(player->header.prog_size);
 	i = offset;
@@ -15,9 +26,9 @@ void	init_map_player(t_visual *visual, size_t offset, t_player *player)
 	}
 }
 
-void 	init_map(t_arena *arena)
+void		init_map(t_arena *arena)
 {
-	size_t	offset;
+	size_t		offset;
 	t_list		*players;
 	t_player	*player;
 
@@ -32,7 +43,7 @@ void 	init_map(t_arena *arena)
 	}
 }
 
-void	init_pairs(void)
+void		init_pairs(void)
 {
 	init_color(COLOR_GRAY, 355, 355, 355);
 	init_pair(GRAY, COLOR_GRAY, COLOR_BLACK);
@@ -68,7 +79,7 @@ t_visual	*init_visual(t_arena *arena)
 	return (visual);
 }
 
-void 	init_window(void)
+void		init_window(void)
 {
 	initscr();
 	keypad(stdscr, true);

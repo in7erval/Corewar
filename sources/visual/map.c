@@ -1,7 +1,18 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   map.c                                              :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: htrent <htrent@student.42.fr>              +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2020/10/30 15:31:49 by htrent            #+#    #+#             */
+/*   Updated: 2020/10/30 15:31:50 by htrent           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
 #include "corewar_vs.h"
 
-void 	update_map(t_arena *arena, t_carriage *carriage, int addr, int size)
+void	update_map(t_arena *arena, t_carriage *carriage, int addr, int size)
 {
 	int s;
 

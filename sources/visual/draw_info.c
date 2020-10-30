@@ -1,30 +1,38 @@
-//
-// Created by Дмитрий Юдаков on 11.10.2020.
-//
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   draw_info.c                                        :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: htrent <htrent@student.42.fr>              +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2020/10/30 15:31:31 by htrent            #+#    #+#             */
+/*   Updated: 2020/10/30 15:31:34 by htrent           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
 #include "corewar_vs.h"
 
-void 	draw_addition_info(t_arena *arena)
+void	draw_addition_info(t_arena *arena)
 {
 	int x;
 
 	x = CORE_WIDTH + 1 + 2;
 	mvprintw(28, x, "%-32s %d", "CYCLE_TO_DYE:", arena->cycles_to_die);
-	mvprintw(30, x,	"%-32s %d", "CYCLE_DELTA:", CYCLE_DELTA);
-	mvprintw(32, x,	"%-32s %.4d/%d","Lives:", arena->live_nbr, NBR_LIVE);
-	mvprintw(34, x,	"%-32s %.2d/%d", "Checks:",arena->checks_nbr > 0 ?
+	mvprintw(30, x, "%-32s %d", "CYCLE_DELTA:", CYCLE_DELTA);
+	mvprintw(32, x, "%-32s %.4d/%d", "Lives:", arena->live_nbr, NBR_LIVE);
+	mvprintw(34, x, "%-32s %.2d/%d", "Checks:", arena->checks_nbr > 0 ?
 		arena->checks_nbr - 1 : 0, MAX_CHECKS);
-	mvprintw(36, x,	"%-32s %d", "Cycles_to_checks:", (arena->cycles_to_die > 0)
+	mvprintw(36, x, "%-32s %d", "Cycles_to_checks:", (arena->cycles_to_die > 0)
 					? arena->cycles_to_die - arena->after_check : 0);
 	if (arena->visual->has_aff)
 		mvprintw(38, x, "%-32s (%d)%c", "Aff:", arena->visual->aff,
-		   arena->visual->aff);
+		arena->visual->aff);
 }
 
-void 	draw_players_info(t_arena *arena, int y, int x)
+void	draw_players_info(t_arena *arena, int y, int x)
 {
-	t_player *player;
-	t_list 	*players;
+	t_player	*player;
+	t_list		*players;
 
 	players = arena->players;
 	while (players)
@@ -38,11 +46,11 @@ void 	draw_players_info(t_arena *arena, int y, int x)
 		players = players->next;
 		mvprintw(++y, x + 2, "Last live: %30d", player->last_live);
 		mvprintw(++y, x + 2, "Lives in current period: %16d",
-		   player->current_lives);
+			player->current_lives);
 	}
 }
 
-void 	draw_help(void)
+void	draw_help(void)
 {
 	mvprintw(59, CORE_WIDTH + 3, "CONTROLS:");
 	mvprintw(61, CORE_WIDTH + 3, "'q' -- -10 to cycles_per_sec");
@@ -52,8 +60,7 @@ void 	draw_help(void)
 	mvprintw(65, CORE_WIDTH + 3, "'d' -- debug mode (press Space)");
 }
 
-
-void 	draw_winner(t_arena *arena)
+void	draw_winner(t_arena *arena)
 {
 	t_player *player;
 
@@ -78,7 +85,7 @@ void	draw_info(t_arena *arena)
 	attron(A_BOLD);
 	attron(g_colors[(arena->visual->is_running || arena->visual->debug) ?
 						1 : 3]);
-	mvprintw(y, x, (arena->visual->is_running || arena->visual->debug)  ?
+	mvprintw(y, x, (arena->visual->is_running || arena->visual->debug) ?
 					"** Running **" : "** Stopped **");
 	attroff(g_colors[(arena->visual->is_running || arena->visual->debug) ?
 						1 : 3]);

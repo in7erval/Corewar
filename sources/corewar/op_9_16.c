@@ -83,29 +83,10 @@ int	ft_sti(t_carriage *carriage, int args[3])
 	pc = ft_calculate_pc(carriage, carriage->values[0]);
 	ft_memmove_circle(&carriage->core[pc],
 	carriage->params[0], carriage, REG_SIZE);
-	//ft_printf("{red}pc: %.2x, {cyan}target_pc: %.2x{eoc}\n", pc, carriage->target_pc);
 	if (carriage->arena->v)
 		update_map(carriage->arena, carriage, pc, DIR_SIZE);
 	ft_skip_args(carriage, args, 2);
 	return (EXIT_SUCCESS);
-}
-
-t_carriage	*duplicate_carriage(t_carriage *carriage)
-{
-	t_carriage *new_carriage;
-
-	if (!(new_carriage = (t_carriage*)ft_memalloc(sizeof(t_carriage))))
-		ft_exit("ERROR", NULL);
-	ft_memmove(new_carriage, carriage, sizeof(t_carriage));
-	new_carriage->pc = carriage->values[0];
-	if (g_op_tab[carriage->op].op_code == 12)
-		new_carriage->pc %= IDX_MOD;
-	new_carriage->pc = ft_calculate_pc(carriage, new_carriage->pc);
-	new_carriage->id = ++carriage->arena->carriage_index;
-	new_carriage->regs[0] = -(carriage->owner->nbr);
-	new_carriage->wait_cmd = 1;
-	carriage->arena->carriages_nbr++;
-	return (new_carriage);
 }
 
 int	ft_fork_lfork(t_carriage *carriage, int args[3])
