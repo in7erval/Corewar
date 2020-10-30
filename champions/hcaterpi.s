@@ -77,4 +77,3 @@ s_field:		ld %654960, r5
 				sti r5, %:s_field, %399
 				and r3, %8, r10
 				zjmp %:f_hirelings
-
