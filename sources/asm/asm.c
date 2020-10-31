@@ -74,10 +74,10 @@ void	check_syntax(t_asm *assembler, t_token *tokens)
 		ft_skip_operator(&tokens, assembler);
 	}
 	if (!assembler->pos)
-		{
-			ft_printe("ERROR: no champion code found\n");
-			exit (1);
-		}
+	{
+		ft_printe("ERROR: no champion code found\n");
+		exit(1);
+	}
 }
 
 void	write_file(t_asm *assembler, char *name)
