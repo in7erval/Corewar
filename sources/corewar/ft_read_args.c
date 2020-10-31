@@ -54,6 +54,8 @@ t_header	ft_read_header(char *file, int *fd)
 		ft_exit("ERROR: no string terminator found in comments in ", file);
 	if (ft_reverse_bytes(header.prog_size) > CHAMP_MAX_SIZE)
 		ft_exit("ERROR: champion prog_size too big in ", file);
+	if (ft_reverse_bytes(header.prog_size) <= 0)
+		ft_exit("ERROR: no champion prog found in ", file);
 	return (header);
 }
 
