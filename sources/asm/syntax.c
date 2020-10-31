@@ -6,7 +6,7 @@
 /*   By: majosue <majosue@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/10/26 02:49:32 by majosue           #+#    #+#             */
-/*   Updated: 2020/10/26 05:01:32 by majosue          ###   ########.fr       */
+/*   Updated: 2020/10/31 19:56:52 by majosue          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,7 +66,7 @@ void			ft_skip_args(int op, t_token **token, t_asm *assembler)
 		*token = (*token)->next->type == SEPARATOR ?
 			(*token)->next->next : (*token)->next;
 	}
-	if (i == 0)
+	if (i != g_op_tab[op].max_params)
 		ft_asm_exit(NULL, NULL, NULL, *token);
 	ft_write_acb(&opr);
 	if (!(assembler->bytecode = realloc(assembler->bytecode,
