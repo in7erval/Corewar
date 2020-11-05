@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   init_and_usage.c                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: htrent <htrent@student.42.fr>              +#+  +:+       +#+        */
+/*   By: majosue <majosue@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/10/30 15:41:13 by htrent            #+#    #+#             */
-/*   Updated: 2020/10/30 15:41:17 by htrent           ###   ########.fr       */
+/*   Updated: 2020/11/05 05:46:20 by majosue          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,8 +48,8 @@ Usage: ./corewar [-a -v -dump N -verbose N -legacy N] [[-n N] champion1.cor]\
 		- 4 : Show operations (Params are NOT litteral ...)\n\
 		- 8 : Show deaths\n\
 	-legacy N : Compability with zaz corewar\n\
-		- 1 : Repeat subject corewar ld bug (default)\n\
-		- 0 : ld bug free\n\
+		- 1 : Repeat subject corewar lld bug (default)\n\
+		- 0 : lld bug free\n\
 	-n N : Set unic champion number\n");
 	return (1);
 }

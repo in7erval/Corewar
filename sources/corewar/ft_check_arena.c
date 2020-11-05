@@ -6,7 +6,7 @@
 /*   By: majosue <majosue@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/10/02 01:46:13 by majosue           #+#    #+#             */
-/*   Updated: 2020/10/02 06:07:56 by majosue          ###   ########.fr       */
+/*   Updated: 2020/11/05 05:44:12 by majosue          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,6 +58,8 @@ int		ft_check_arena(t_arena *arena)
 		arena->cycles_to_die -= CYCLE_DELTA;
 		arena->checks_nbr = 0;
 		arena->cycle_change_cycles_to_die = arena->nbr_cycles;
+		if (arena->verbose & 2)
+			ft_printf("Cycle to die is now %d\n", arena->cycles_to_die);
 	}
 	arena->checks_nbr++;
 	arena->after_check = 0;
