@@ -3,4 +3,4 @@ ASM=./asm
 COREWAR=./corewar
 cat champions/cycles.s
 $ASM champions/cycles.s
-$COREWAR -v champions/cycles.cor
+$COREWAR -verbose 11 champions/cycles.cor
