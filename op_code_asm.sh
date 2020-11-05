@@ -1,9 +1,6 @@
 #!/bin/bash
-#
-#	Change ASM and compare output
-#
-ASM=./vm_champs/asm
-#ASM=./asm
+#ASM=./vm_champs/asm
+ASM=./asm
 $ASM champions/live.s
 hexdump -vC champions/live.cor | sed -n '138p'
 printf "No Argument Coding Byte for \"life\"\n\n"
