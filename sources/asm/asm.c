@@ -6,7 +6,7 @@
 /*   By: majosue <majosue@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/10/26 01:41:42 by majosue           #+#    #+#             */
-/*   Updated: 2020/11/04 14:05:30 by majosue          ###   ########.fr       */
+/*   Updated: 2020/11/08 15:13:54 by htrent           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -92,7 +92,7 @@ void	write_file(t_asm *assembler, char *name)
 	if (!(output_name = ft_strjoin(output_name, ".cor")))
 		ft_asm_exit(NULL, NULL, NULL, NULL);
 	ft_strdel(&tmp);
-	if ((fd = open(output_name, O_WRONLY | O_CREAT | O_TRUNC , 0644)) < 0)
+	if ((fd = open(output_name, O_WRONLY | O_CREAT | O_TRUNC, 0644)) < 0)
 		ft_asm_exit(NULL, NULL, NULL, NULL);
 	ft_printf("Writing output program to %s\n", output_name);
 	ft_strdel(&output_name);
